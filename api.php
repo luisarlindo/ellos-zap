@@ -73,12 +73,21 @@ function stripAccents($str) {
 
 function cleanCompanyName($razao, $fantasia) {
     $name = trim($fantasia ?: $razao);
-    // Remove CNPJ/CPF no início ou fim (comum em MEI)
     $name = preg_replace('/^[\d.\-\/\s]+/', '', $name);
     $name = preg_replace('/\s+\d{11}$/', '', $name);
-    // Remove sufixos societários
     $name = preg_replace('/\b(LTDA|ME|EPP|EIRELI|S\/A|S\.A\.|SOCIEDADE SIMPLES|UNIPESSOAL|LIMITADA|EMPRESARIO INDIVIDUAL)\b\.?/i', '', $name);
     return trim(preg_replace('/\s+/', ' ', $name));
+}
+
+function normalizeBrPhoneDigits($rawDigits) {
+    $d = preg_replace('/\D/', '', (string)$rawDigits);
+    if (str_starts_with($d, '55') && strlen($d) >= 12) $d = substr($d, 2);
+    if (str_starts_with($d, '0') && strlen($d) >= 11) $d = substr($d, 1);
+    if (strlen($d) < 10 || strlen($d) > 11) return '';
+    if (strlen($d) === 10 && in_array($d[2], ['7', '8', '9'])) {
+        $d = substr($d, 0, 2) . '9' . substr($d, 2);
+    }
+    return $d;
 }
 
 function formatBrPhone($digits) {
@@ -89,6 +98,24 @@ function formatBrPhone($digits) {
         return sprintf('(%s) %s-%s', substr($d, 0, 2), substr($d, 2, 4), substr($d, 6, 4));
     }
     return $digits;
+}
+
+function formatCnpj($digits) {
+    $d = preg_replace('/\D/', '', $digits);
+    if (strlen($d) === 14) {
+        return sprintf('%s.%s.%s/%s-%s', substr($d, 0, 2), substr($d, 2, 3), substr($d, 5, 3), substr($d, 8, 4), substr($d, 12, 2));
+    }
+    return $digits;
+}
+
+function unwrapGoogleUrl($u) {
+    if (!$u) return null;
+    if (str_starts_with($u, '/url?')) {
+        $parts = parse_url($u);
+        parse_str($parts['query'] ?? '', $q);
+        return $q['q'] ?? null;
+    }
+    return $u;
 }
 
 function getDistinctiveKeywords($name) {
@@ -112,6 +139,93 @@ function getDistinctiveKeywords($name) {
     return array_values(array_unique($keywords));
 }
 
+function extractPlaceFromGmapsItem($item) {
+    $p = $item[14] ?? null;
+    if (!$p || empty($p[11])) return null;
+
+    $title = trim($p[11]);
+    $addr = trim($p[39] ?? (isset($p[2]) && is_array($p[2]) ? implode(', ', $p[2]) : ''));
+    // Remove duplicação eventual de bairro/CEP no endereço do Google Maps
+    if (preg_match('/^(.+?,\s*\d{5}-\d{3})\s*-\s*.+$/u', $addr, $am)) {
+        $addr = trim($am[1]);
+    }
+
+    $pStatus = null;
+    $flatJson = json_encode($p, JSON_UNESCAPED_UNICODE);
+    if (preg_match_all('/"((?:Aberto|Fechado|Fecha em breve|Abre em breve)(?:\s*[·⋅]\s*[^"\\\\]{1,40}|\s+24\s+horas|\s+temporariamente)?)"/u', $flatJson, $sm)) {
+        foreach ($sm[1] as $stCandidate) {
+            $stClean = trim($stCandidate);
+            if (stripos($stClean, 'inexistente') !== false || stripos($stClean, 'duplicado') !== false) continue;
+            if (!$pStatus || mb_strlen($stClean) > mb_strlen($pStatus)) {
+                $pStatus = $stClean;
+            }
+        }
+    }
+
+    $phonesMap = [];
+    if (!empty($p[178]) && is_array($p[178])) {
+        foreach ($p[178] as $telObj) {
+            $rawTel = $telObj[3] ?? ($telObj[0] ?? '');
+            $norm = normalizeBrPhoneDigits($rawTel);
+            if ($norm && !isset($phonesMap[$norm])) {
+                $isMob = (strlen($norm) === 11 && $norm[2] === '9');
+                $phonesMap[$norm] = [
+                    'phone' => $norm,
+                    'formatted' => formatBrPhone($norm),
+                    'type' => $isMob ? 'MOBILE' : 'LANDLINE'
+                ];
+            }
+        }
+    }
+
+    $destQuery = urlencode("$title, $addr");
+    $mapsUrl = "https://www.google.com/maps/search/?api=1&query=$destQuery" . (!empty($p[78]) ? "&query_place_id=" . urlencode($p[78]) : "");
+
+    return [
+        'name' => $title,
+        'address' => $addr,
+        'status' => $pStatus,
+        'website' => unwrapGoogleUrl($p[7][0] ?? null),
+        'maps_url' => $mapsUrl,
+        'phones' => array_values($phonesMap)
+    ];
+}
+
+function queryGoogleMapsRpc($queryStr, $lat = -7.14, $lng = -34.86, $radius = 120000) {
+    $pb = "!4m12!1m3!1d{$radius}!2d{$lng}!3d{$lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!7i20!10b1!12m8!1m1!18b1!2m3!5m1!6e2!20e3!10b1!16b1!19m4!2m3!1i360!2i120!4i8!20m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240!7m42!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e9!2b1!3e2!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!2b1!4b1!9b0!22m6!1sa!2z!7e81!12e3!17sa!18e1!24m15!2b1!5m4!2b1!3b1!5b1!6b1!10m1!8e3!14m1!3b1!17b1!20m2!1e3!1e6!24b1!26m4!2m3!1i80!2i92!4i8!30m28!1m6!1m2!1i0!2i0!2m2!1i458!2i768!1m6!1m2!1i974!2i0!2m2!1i1024!2i768!1m6!1m2!1i0!2i0!2m2!1i1024!2i20!1m6!1m2!1i0!2i748!2m2!1i1024!2i768!34m13!2b1!3b1!4b1!6b1!8m4!1b1!3b1!4b1!6b1!9b1!12b1!14b1!20b1!37m1!1e81!42b1!47m0!49m1!3b1";
+    $url = "https://www.google.com/search?tbm=map&authuser=0&hl=pt-BR&gl=br&pb=$pb&q=" . urlencode($queryStr);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_ENCODING => "",
+        CURLOPT_CONNECTTIMEOUT => 5,
+        CURLOPT_TIMEOUT => 9,
+        CURLOPT_HTTPHEADER => [
+            "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language: pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7"
+        ]
+    ]);
+    $raw = curl_exec($ch);
+    curl_close($ch);
+    if (empty($raw)) return [];
+
+    $jsonStr = preg_replace('/^\)\]\}\'\s*/', '', $raw);
+    $data = json_decode($jsonStr, true);
+    $items = $data[0][1] ?? [];
+    if (!is_array($items)) return [];
+
+    $places = [];
+    foreach ($items as $it) {
+        $parsed = extractPlaceFromGmapsItem($it);
+        if ($parsed) {
+            $places[] = $parsed;
+        }
+    }
+    return $places;
+}
+
 // Roteamento baseado em URI ou query param 'action'
 $requestUri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
@@ -123,6 +237,8 @@ if (!$action) {
         $action = 'numbers';
     } elseif (strpos($requestUri, '/api/2chat/check') !== false) {
         $action = 'check';
+    } elseif (strpos($requestUri, '/api/2chat/search') !== false || strpos($requestUri, '/api/search') !== false) {
+        $action = 'search';
     } elseif (strpos($requestUri, '/api/2chat/cnpj') !== false || strpos($requestUri, '/api/cnpj') !== false) {
         $action = 'cnpj';
     }
@@ -194,10 +310,229 @@ if ($action === 'check') {
     exit;
 }
 
-// 4. Trajeto CNPJ -> Nome da Empresa -> Busca Google Maps & Telefone Comercial
+// 4. Busca Unificada Inteligente: NOME / TELEFONE / CNPJ
+if ($action === 'search') {
+    $t0 = microtime(true);
+    $rawQuery = trim($_GET['q'] ?? '');
+    $lat = isset($_GET['lat']) && is_numeric($_GET['lat']) ? (float)$_GET['lat'] : -7.14;
+    $lng = isset($_GET['lng']) && is_numeric($_GET['lng']) ? (float)$_GET['lng'] : -34.86;
+
+    if ($rawQuery === '') {
+        http_response_code(400);
+        echo json_encode(['error' => true, 'message' => 'Informe um Nome, Telefone ou CNPJ.']);
+        exit;
+    }
+
+    $hasLetters = (bool)preg_match('/[a-zA-ZÀ-ÿ]/u', $rawQuery);
+    $digitsOnly = preg_replace('/\D/', '', $rawQuery);
+
+    // =========================================================
+    // MODO A: TELEFONE (10 ou 11 dígitos, sem letras)
+    // =========================================================
+    if (!$hasLetters && strlen($digitsOnly) >= 10 && strlen($digitsOnly) <= 11) {
+        $normPhone = normalizeBrPhoneDigits($digitsOnly);
+        $formattedPhone = formatBrPhone($normPhone ?: $digitsOnly);
+        $isMob = (strlen($normPhone) === 11 && $normPhone[2] === '9');
+
+        // Busca no Google Maps RPC pelo telefone para descobrir nome e endereço da empresa (se existir)
+        $places = queryGoogleMapsRpc($formattedPhone, $lat, $lng, 150000);
+        if (empty($places)) {
+            $places = queryGoogleMapsRpc($normPhone, $lat, $lng, 150000);
+        }
+
+        $matchedBranches = [];
+        foreach ($places as $pl) {
+            // Verifica se a ficha retornada tem esse telefone ou se foi resultado único direto
+            $hasThisPhone = false;
+            foreach ($pl['phones'] as $pObj) {
+                if ($pObj['phone'] === $normPhone) {
+                    $hasThisPhone = true;
+                    break;
+                }
+            }
+            if ($hasThisPhone || count($places) === 1) {
+                if (!$hasThisPhone) {
+                    array_unshift($pl['phones'], [
+                        'phone' => $normPhone,
+                        'formatted' => $formattedPhone,
+                        'type' => $isMob ? 'MOBILE' : 'LANDLINE'
+                    ]);
+                }
+                $matchedBranches[] = $pl;
+            }
+        }
+
+        // Se o telefone não pertence a um estabelecimento listado no Google Maps, retorna o cartão direto do número
+        if (empty($matchedBranches)) {
+            $matchedBranches[] = [
+                'name' => $formattedPhone,
+                'address' => '',
+                'status' => null,
+                'website' => null,
+                'maps_url' => null,
+                'phones' => [[
+                    'phone' => $normPhone ?: $digitsOnly,
+                    'formatted' => $formattedPhone,
+                    'type' => $isMob ? 'MOBILE' : 'LANDLINE'
+                ]]
+            ];
+        }
+
+        echo json_encode([
+            'success' => true,
+            'mode' => 'phone',
+            'query' => $rawQuery,
+            'resolved_name' => $matchedBranches[0]['name'] ?? $formattedPhone,
+            'elapsed_ms' => round((microtime(true) - $t0) * 1000),
+            'branches' => $matchedBranches
+        ]);
+        exit;
+    }
+
+    // =========================================================
+    // MODO B: NOME DA EMPRESA (Com correção ortográfica e filiais)
+    // =========================================================
+    if ($hasLetters) {
+        $places = queryGoogleMapsRpc($rawQuery, $lat, $lng, 120000);
+
+        if (empty($places)) {
+            echo json_encode([
+                'success' => true,
+                'mode' => 'name',
+                'query' => $rawQuery,
+                'resolved_name' => $rawQuery,
+                'was_corrected' => false,
+                'elapsed_ms' => round((microtime(true) - $t0) * 1000),
+                'branches' => []
+            ]);
+            exit;
+        }
+
+        $normQuery = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($rawQuery)));
+        $queryWords = array_values(array_filter(preg_split('/\s+/', $normQuery), fn($w) => strlen($w) >= 2));
+
+        // 1. Verifica se existe exatamente o nome digitado pelo usuário (ex: se existir "Pizza Mestro", mantém "Pizza Mestro")
+        $exactMatches = [];
+        foreach ($places as $pl) {
+            $normTitle = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($pl['name'])));
+            if (str_contains($normTitle, $normQuery)) {
+                $exactMatches[] = $pl;
+            } else {
+                $allWordsMatch = true;
+                foreach ($queryWords as $qw) {
+                    if (!preg_match('/\b' . preg_quote($qw, '/') . '/i', $normTitle)) {
+                        $allWordsMatch = false;
+                        break;
+                    }
+                }
+                if ($allWordsMatch && !empty($queryWords)) {
+                    $exactMatches[] = $pl;
+                }
+            }
+        }
+
+        $wasCorrected = false;
+        $resolvedBrand = $rawQuery;
+        $filteredBranches = [];
+
+        if (!empty($exactMatches)) {
+            $filteredBranches = $exactMatches;
+            $resolvedBrand = $exactMatches[0]['name'];
+        } else {
+            // 2. Correção Ortográfica pelo Google Maps (ex: "Pizza Mestro" -> "Pizza Mestre")
+            // Analisa o 1º resultado retornado pelo Google Maps e reconstrói o nome corrigido da marca
+            $topPlace = $places[0];
+            $topWordsOrig = preg_split('/\s+/', preg_replace('/[|\-–—]/u', ' ', $topPlace['name']));
+            $correctedWords = [];
+
+            foreach ($queryWords as $qw) {
+                $bestWord = null;
+                $bestSim = 0;
+                foreach ($topWordsOrig as $tw) {
+                    $normTw = preg_replace('/[^a-z0-9]/', '', stripAccents($tw));
+                    if (strlen($normTw) < 2) continue;
+                    similar_text($qw, $normTw, $sim);
+                    if ($sim > $bestSim) {
+                        $bestSim = $sim;
+                        $bestWord = $tw;
+                    }
+                }
+                if ($bestWord && $bestSim >= 60) {
+                    $correctedWords[] = $bestWord;
+                }
+            }
+
+            if (!empty($correctedWords)) {
+                $resolvedBrand = implode(' ', array_unique($correctedWords));
+                $wasCorrected = (stripAccents($resolvedBrand) !== stripAccents($rawQuery));
+                $normResolved = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($resolvedBrand)));
+                $resolvedWords = array_values(array_filter(preg_split('/\s+/', $normResolved), fn($w) => strlen($w) >= 2));
+
+                foreach ($places as $pl) {
+                    $normTitle = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($pl['name'])));
+                    $matchAll = true;
+                    foreach ($resolvedWords as $rw) {
+                        if (!preg_match('/\b' . preg_quote($rw, '/') . '/i', $normTitle)) {
+                            $matchAll = false;
+                            break;
+                        }
+                    }
+                    if ($matchAll) {
+                        $filteredBranches[] = $pl;
+                    }
+                }
+            }
+
+            if (empty($filteredBranches)) {
+                $filteredBranches = array_slice($places, 0, 5);
+                $resolvedBrand = $places[0]['name'];
+            }
+        }
+
+        // Se alguma filial da mesma marca veio sem telefone no Maps (ex: Intermares), mas outra filial tem o telefone central da rede, preenche como fallback
+        $sharedBrandPhone = null;
+        foreach ($filteredBranches as $fb) {
+            if (!empty($fb['phones'])) {
+                $sharedBrandPhone = $fb['phones'][0];
+                break;
+            }
+        }
+        if ($sharedBrandPhone && count($filteredBranches) > 1) {
+            foreach ($filteredBranches as &$fb) {
+                if (empty($fb['phones'])) {
+                    $fb['phones'] = [$sharedBrandPhone];
+                }
+            }
+            unset($fb);
+        }
+
+        echo json_encode([
+            'success' => true,
+            'mode' => 'name',
+            'query' => $rawQuery,
+            'resolved_name' => $resolvedBrand,
+            'was_corrected' => $wasCorrected,
+            'elapsed_ms' => round((microtime(true) - $t0) * 1000),
+            'branches' => array_slice($filteredBranches, 0, 10)
+        ]);
+        exit;
+    }
+
+    // Se for 14 dígitos, delega para o bloco CNPJ abaixo
+    if (strlen($digitsOnly) === 14) {
+        $_GET['cnpj'] = $digitsOnly;
+        $action = 'cnpj';
+    } else {
+        http_response_code(400);
+        echo json_encode(['error' => true, 'message' => 'Digite um Nome, Telefone (10 ou 11 dígitos) ou CNPJ (14 dígitos).']);
+        exit;
+    }
+}
+
+// 5. Trajeto CNPJ -> Nome da Empresa -> Busca Google Maps & Telefone Comercial
 if ($action === 'cnpj') {
     $t0 = microtime(true);
-    $rawCnpj = $_GET['cnpj'] ?? '';
+    $rawCnpj = $_GET['cnpj'] ?? ($_GET['q'] ?? '');
     $cnpj = preg_replace('/\D/', '', $rawCnpj);
 
     if (strlen($cnpj) !== 14) {
@@ -261,13 +596,10 @@ if ($action === 'cnpj') {
     $cnae = trim(($bData['cnae_fiscal_descricao'] ?? '') ?: ($est['atividade_principal']['descricao'] ?? ''));
     $situacao = trim(($bData['descricao_situacao_cadastral'] ?? '') ?: ($est['situacao_cadastral'] ?? 'ATIVA'));
 
-    $recTel1 = preg_replace('/\D/', '', ($bData['ddd_telefone_1'] ?? '') ?: (($est['ddd1'] ?? '') . ($est['telefone1'] ?? '')));
-    $recTel2 = preg_replace('/\D/', '', ($bData['ddd_telefone_2'] ?? '') ?: (($est['ddd2'] ?? '') . ($est['telefone2'] ?? '')));
-
     $allowedDdds = $UF_DDDS[$uf] ?? [];
 
     // Etapa 2: Buscar a Empresa diretamente no Google Maps RPC (tbm=map) + Web em paralelo
-    $pbSearch = '!4m12!1m3!1d15000!2d-39.31!3d-7.21!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!7i20!10b1!12m8!1m1!18b1!2m3!5m1!6e2!20e3!10b1!16b1!19m4!2m3!1i360!2i120!4i8!20m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240!7m42!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e9!2b1!3e2!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!2b1!4b1!9b0!22m6!1sa!2z!7e81!12e3!17sa!18e1!24m15!2b1!5m4!2b1!3b1!5b1!6b1!10m1!8e3!14m1!3b1!17b1!20m2!1e3!1e6!24b1!26m4!2m3!1i80!2i92!4i8!30m28!1m6!1m2!1i0!2i0!2m2!1i458!2i768!1m6!1m2!1i974!2i0!2m2!1i1024!2i768!1m6!1m2!1i0!2i0!2m2!1i1024!2i20!1m6!1m2!1i0!2i748!2m2!1i1024!2i768!34m13!2b1!3b1!4b1!6b1!8m4!1b1!3b1!4b1!6b1!9b1!12b1!14b1!20b1!37m1!1e81!42b1!47m0!49m1!3b1';
+    $pbSearch = '!4m12!1m3!1d15000!2d-34.86!3d-7.14!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!7i20!10b1!12m8!1m1!18b1!2m3!5m1!6e2!20e3!10b1!16b1!19m4!2m3!1i360!2i120!4i8!20m57!2m2!1i203!2i100!3m2!2i4!5b1!6m6!1m2!1i86!2i86!1m2!1i408!2i240!7m42!1m3!1e1!2b0!3e3!1m3!1e2!2b1!3e2!1m3!1e2!2b0!3e3!1m3!1e8!2b0!3e3!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e9!2b1!3e2!1m3!1e10!2b0!3e3!1m3!1e10!2b1!3e2!1m3!1e10!2b0!3e4!2b1!4b1!9b0!22m6!1sa!2z!7e81!12e3!17sa!18e1!24m15!2b1!5m4!2b1!3b1!5b1!6b1!10m1!8e3!14m1!3b1!17b1!20m2!1e3!1e6!24b1!26m4!2m3!1i80!2i92!4i8!30m28!1m6!1m2!1i0!2i0!2m2!1i458!2i768!1m6!1m2!1i974!2i0!2m2!1i1024!2i768!1m6!1m2!1i0!2i0!2m2!1i1024!2i20!1m6!1m2!1i0!2i748!2m2!1i1024!2i768!34m13!2b1!3b1!4b1!6b1!8m4!1b1!3b1!4b1!6b1!9b1!12b1!14b1!20b1!37m1!1e81!42b1!47m0!49m1!3b1';
 
     $collapse = fn($s) => trim(preg_replace('/\s+/', ' ', $s));
     $qExactStr = $collapse("$searchName $logradouro $numero $bairro $city $uf");
@@ -327,7 +659,7 @@ if ($action === 'cnpj') {
         trim("$city - $uf"),
         $cepFormatted
     ]);
-    $defaultAddress = implode(' · ', $addressParts);
+    $defaultAddress = implode(', ', $addressParts);
 
     $mapsInfo = [
         'title' => $searchName,
@@ -341,19 +673,11 @@ if ($action === 'cnpj') {
 
     $candidates = [];
     $addCandidate = function($rawDigits, $source, $baseScore, $isExactPlace = false) use (&$candidates, $allowedDdds) {
-        $d = preg_replace('/\D/', '', (string)$rawDigits);
-        if (str_starts_with($d, '55') && strlen($d) >= 12) $d = substr($d, 2);
-        if (str_starts_with($d, '0') && strlen($d) >= 11) $d = substr($d, 1);
-        if (strlen($d) < 10 || strlen($d) > 11) return;
+        $d = normalizeBrPhoneDigits($rawDigits);
+        if (empty($d)) return;
 
         $ddd = substr($d, 0, 2);
         $isLocalDdd = empty($allowedDdds) || in_array($ddd, $allowedDdds);
-
-        // Se tiver 10 dígitos e iniciar com 7, 8 ou 9 após o DDD, adiciona o 9º dígito de celular
-        if (strlen($d) === 10 && in_array($d[2], ['7', '8', '9'])) {
-            $d = $ddd . '9' . substr($d, 2);
-        }
-
         $isMobile = (strlen($d) === 11 && $d[2] === '9');
         $score = $baseScore + ($isLocalDdd ? 50 : -80) + ($isMobile ? 30 : 0);
 
@@ -390,7 +714,6 @@ if ($action === 'cnpj') {
         $items = $data[0][1] ?? [];
         if (!is_array($items)) continue;
 
-        // Conta quantas fichas reais vieram nesta resposta
         $validPlacesCount = 0;
         foreach ($items as $it) {
             if (!empty($it[14][11])) $validPlacesCount++;
@@ -406,14 +729,12 @@ if ($action === 'cnpj') {
             $normTitle = stripAccents($pTitle);
             $normAddr  = stripAccents($pAddr);
 
-            // Verifica se o endereço pertence a outro estado (ex: "- BA," quando UF é "PB")
             if (!empty($uf) && preg_match('/\b([a-z]{2}),\s*\d{5}/', $normAddr, $ufM)) {
                 if (strtoupper($ufM[1]) !== $uf) {
-                    continue; // Ignora homônimos em outros estados
+                    continue;
                 }
             }
 
-            // Calcula match de endereço (Rua + Número, Bairro, CEP, Cidade)
             $hasStreet = (!empty($normStreet) && strlen($normStreet) >= 4 && str_contains($normAddr, $normStreet));
             $hasNumber = (!empty($numero) && strtoupper($numero) !== 'S/N' && preg_match('/\b' . preg_quote($numero, '/') . '\b/', $normAddr));
             $hasExactAddress = ($hasStreet && $hasNumber);
@@ -421,12 +742,10 @@ if ($action === 'cnpj') {
             $hasCepPrefix = (!empty($cepPrefix) && str_contains($normAddr, $cepPrefix));
             $hasCity = (!empty($normCity) && str_contains($normAddr, $normCity));
 
-            // Se o endereço tem cidade explícita, exige que seja a mesma cidade do CNPJ (ou tenha o mesmo prefixo de CEP)
             if (!empty($normCity) && !$hasCity && !$hasCepPrefix && preg_match('/-\s*[a-z]{2}\b/', $normAddr)) {
                 continue;
             }
 
-            // Calcula similaridade de nome e palavras-chave
             similar_text($normSearch, $normTitle, $simPct);
             $matchedKeywords = 0;
             foreach ($keywords as $kw) {
@@ -436,7 +755,6 @@ if ($action === 'cnpj') {
             }
             $hasNameMatch = ($simPct >= 68) || ($matchedKeywords > 0 && ($matchedKeywords >= count($keywords) || $simPct >= 52)) || str_contains($normTitle, $normSearch) || str_contains($normSearch, $normTitle);
 
-            // Filtro de segurança: só aceita a ficha se bater o nome da empresa OU bater rua+número exatos OU for resultado único na cidade
             if (!$hasNameMatch && !$hasExactAddress && !($validPlacesCount === 1 && $hasCity && $gKey === 'gmaps_exact')) {
                 continue;
             }
@@ -455,7 +773,6 @@ if ($action === 'cnpj') {
             if ($hasCity) $placeScore += 20;
             if ($validPlacesCount === 1 && $gKey === 'gmaps_exact') $placeScore += 35;
 
-            // Extrai status Aberto/Fechado real (evita strings jurídicas do rodapé do Maps)
             $pStatus = null;
             $flatJson = json_encode($p, JSON_UNESCAPED_UNICODE);
             if (preg_match_all('/"((?:Aberto|Fechado|Fecha em breve|Abre em breve)(?:\s*[·⋅]\s*[^"\\\\]{1,40}|\s+24\s+horas|\s+temporariamente)?)"/u', $flatJson, $sm)) {
@@ -471,7 +788,7 @@ if ($action === 'cnpj') {
             $ratingVal = $p[4][7] ?? null;
             $reviewsCount = $p[4][8] ?? null;
             $pRating = ($ratingVal !== null) ? str_replace('.', ',', (string)$ratingVal) . ($reviewsCount ? " ($reviewsCount)" : '') : null;
-            $pWebsite = $p[7][0] ?? null;
+            $pWebsite = unwrapGoogleUrl($p[7][0] ?? null);
 
             if ($placeScore > $bestPlaceScore) {
                 $bestPlaceScore = $placeScore;
@@ -486,7 +803,6 @@ if ($action === 'cnpj') {
                 $mapsInfo['maps_url'] = "https://www.google.com/maps/search/?api=1&query=$destQuery" . (!empty($p[78]) ? "&query_place_id=" . urlencode($p[78]) : "");
             }
 
-            // Extrai telefones da ficha do Google Maps
             if (!empty($p[178]) && is_array($p[178])) {
                 foreach ($p[178] as $telObj) {
                     $rawTel = $telObj[3] ?? ($telObj[0] ?? '');
@@ -499,7 +815,6 @@ if ($action === 'cnpj') {
         }
     }
 
-    // Se encontramos a ficha no endereço exato (Rua + Número), removemos telefones de homônimos em outros endereços do Google Maps
     if ($foundExactAddressPlace) {
         foreach ($candidates as $k => $c) {
             if (str_starts_with($c['source'], 'Google Maps') && empty($c['is_exact_place'])) {
@@ -508,7 +823,6 @@ if ($action === 'cnpj') {
         }
     }
 
-    // Etapa 4: Se a ficha do Google Maps possui um site/cardápio digital, inspeciona o site para extrair links diretos de WhatsApp (wa.me) e telefones adicionais do Google
     if (!empty($mapsInfo['website'])) {
         $siteUrl = $mapsInfo['website'];
         if (!preg_match('/(facebook\.com|instagram\.com)/i', $siteUrl)) {
@@ -538,7 +852,6 @@ if ($action === 'cnpj') {
         }
     }
 
-    // Etapa 5: Extrair telefones complementares da busca Web (apenas se ainda não encontramos na ficha do Google Maps)
     if (empty($candidates)) {
         $bingHtml = $responses['bing_web'] ?? '';
         if (!empty($bingHtml)) {
@@ -561,15 +874,21 @@ if ($action === 'cnpj') {
     $localCandidates = array_filter($candidates, fn($c) => $c['is_local_ddd']);
     $finalList = !empty($localCandidates) ? array_values($localCandidates) : array_values($candidates);
     usort($finalList, fn($a, $b) => $b['score'] <=> $a['score']);
+    $slicedPhones = array_slice($finalList, 0, 6);
 
     $receitaDisplayName = $fantasia ?: ($searchName ?: $razao);
+    $formattedCnpj = formatCnpj($cnpj);
 
     http_response_code(200);
     echo json_encode([
         'success' => true,
+        'mode' => 'cnpj',
+        'query' => $formattedCnpj,
+        'resolved_name' => $receitaDisplayName,
         'elapsed_ms' => round((microtime(true) - $t0) * 1000),
         'company' => [
             'cnpj' => $cnpj,
+            'formatted_cnpj' => $formattedCnpj,
             'razao_social' => $razao,
             'nome_fantasia' => $fantasia,
             'display_name' => $receitaDisplayName,
@@ -583,8 +902,16 @@ if ($action === 'cnpj') {
             'address' => $mapsInfo['address']
         ],
         'google_place' => $mapsInfo,
-        'best_phone' => $finalList[0] ?? null,
-        'phones' => array_slice($finalList, 0, 6)
+        'best_phone' => $slicedPhones[0] ?? null,
+        'phones' => $slicedPhones,
+        'branches' => [[
+            'name' => $receitaDisplayName,
+            'cnpj' => $formattedCnpj,
+            'address' => $mapsInfo['address'],
+            'status' => $mapsInfo['status'],
+            'maps_url' => $mapsInfo['maps_url'],
+            'phones' => $slicedPhones
+        ]]
     ]);
     exit;
 }

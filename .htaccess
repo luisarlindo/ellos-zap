@@ -5,8 +5,9 @@ DirectoryIndex index.html index.php
     RewriteEngine On
     RewriteBase /
 
-    # Redirecionar endpoints da API 2Chat e CNPJ/Google para api.php
+    # Redirecionar endpoints da API 2Chat, Busca e CNPJ/Google para api.php
     RewriteRule ^api/2chat/([a-zA-Z0-9_-]+)/?$ api.php?action=$1 [QSA,L]
+    RewriteRule ^api/search/?$ api.php?action=search [QSA,L]
     RewriteRule ^api/cnpj/([a-zA-Z0-9_-]+)/?$ api.php?action=cnpj&cnpj=$1 [QSA,L]
     RewriteRule ^api/cnpj/?$ api.php?action=cnpj [QSA,L]
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-  <title>Ellos Zap | Disparador Inteligente WhatsApp</title>
+  <title>Ellos Zap | Busca &amp; Conexão WhatsApp</title>
 
   <!-- Google Fonts: Plus Jakarta Sans (exclusiva da Navbar) + Outfit (Tipografia Moderna do App) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -55,7 +55,6 @@
     }
   </script>
   <style>
-    /* Safe areas para iPhone */
     .safe-top {
       padding-top: max(0.5rem, env(safe-area-inset-top, 0.5rem));
     }
@@ -65,32 +64,10 @@
     * {
       -webkit-tap-highlight-color: transparent;
     }
-    /* Números tabulares modernos na fonte Outfit */
     .tabular-nums {
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.01em;
     }
-    /* Balão estilo WhatsApp */
-    .chat-bubble-tail {
-      position: relative;
-    }
-    .chat-bubble-tail::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: -7px;
-      width: 0;
-      height: 0;
-      border-top: 9px solid #d9fdd3;
-      border-right: 9px solid transparent;
-    }
-    /* Wallpaper WhatsApp */
-    .whatsapp-bg {
-      background-color: #efeae2;
-      background-image: radial-gradient(#d6cebe 1.1px, transparent 1.1px);
-      background-size: 14px 14px;
-    }
-    /* Animação fluida */
     .fade-in {
       animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -98,21 +75,13 @@
       from { opacity: 0; transform: translateY(4px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    .no-scrollbar::-webkit-scrollbar {
-      display: none;
-    }
-    .no-scrollbar {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-    }
   </style>
 </head>
 <body class="bg-[#f4f7fb] font-sans text-slate-800 min-h-screen flex flex-col antialiased selection:bg-emerald-500 selection:text-white">
 
-  <!-- App Header (Mantém a tipografia original Plus Jakarta Sans no nome Ellos Zap connecTI) -->
+  <!-- Navbar (Mantém a tipografia original Plus Jakarta Sans no nome Ellos Zap connecTI) -->
   <header class="bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 safe-top">
-    <div class="max-w-5xl mx-auto px-3.5 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-2">
-      <!-- Identidade Visual Ellos Zap connecTI (Tipografia Intacta) -->
+    <div class="max-w-xl mx-auto px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
       <div class="flex items-center gap-2.5 sm:gap-3 min-w-0 font-brand">
         <img 
           src="assets/logo.png?v=3" 
@@ -128,394 +97,99 @@
               connecTI
             </span>
           </div>
-          <p class="text-[10px] sm:text-[11px] text-slate-400 font-medium leading-none mt-0.5 truncate font-sans">
-            Disparador &amp; Busca Comercial
-          </p>
         </div>
       </div>
 
-      <!-- Ações Rápidas da Barra Superior -->
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
-        <button
-          type="button"
-          onclick="scrollToContacts()"
-          class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100/90 hover:bg-slate-200/70 active:scale-95 transition-all"
-          title="Ver contatos salvos"
-        >
-          <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-          </svg>
-          <span>Agenda</span>
-          <span id="headerSavedBadge" class="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-600 text-white leading-tight tabular-nums">0</span>
-        </button>
-
-        <button 
-          type="button" 
-          id="btnInstallPwa" 
-          onclick="installPwa()" 
-          class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-ellos-blue hover:bg-ellos-darkBlue text-white shadow-2xs transition-all active:scale-95 shrink-0"
-          title="Instalar aplicativo no celular"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
-          <span>Instalar</span>
-        </button>
-      </div>
+      <button 
+        type="button" 
+        id="btnInstallPwa" 
+        onclick="installPwa()" 
+        class="hidden inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-ellos-blue hover:bg-ellos-darkBlue text-white shadow-2xs transition-all active:scale-95 shrink-0"
+        title="Instalar aplicativo no celular"
+      >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+        </svg>
+        <span>Instalar</span>
+      </button>
     </div>
   </header>
 
-  <!-- Conteúdo Principal -->
-  <main class="flex-1 max-w-5xl w-full mx-auto px-3 sm:px-6 py-3.5 sm:py-7 safe-bottom">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-7 items-start">
-      
-      <!-- COLUNA PRINCIPAL: Formulário Unificado + Agenda (Mobile: 1º, Desktop: 7 colunas) -->
-      <div class="col-span-1 lg:col-span-7 space-y-4">
+  <!-- Conteúdo Principal Enxuto -->
+  <main class="flex-1 max-w-xl w-full mx-auto px-3.5 sm:px-6 py-5 sm:py-10 safe-bottom flex flex-col justify-start">
+    <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200/80 p-4 sm:p-6 space-y-4">
 
-        <!-- CARD PRINCIPAL: Disparo e Busca Unificada -->
-        <section class="bg-white rounded-2xl sm:rounded-3xl shadow-xs border border-slate-200/80 p-4 sm:p-6">
-          <div class="flex items-center justify-between gap-2 pb-3 mb-4 border-b border-slate-100">
-            <h1 class="text-base sm:text-lg font-bold text-slate-900 tracking-tight">Nova Conversa</h1>
-            <button
-              type="button"
-              onclick="resetFormFields()"
-              class="text-xs font-medium text-slate-400 hover:text-slate-600 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
-              title="Limpar todos os campos"
-            >
-              Limpar
-            </button>
-          </div>
+      <!-- CAMPO ÚNICO: NOME / TELEFONE / CNPJ -->
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <label for="unifiedInput" class="block text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-800">
+            NOME / TELEFONE / CNPJ
+          </label>
+          <span id="correctedBadge" class="hidden text-[11px] font-semibold text-ellos-blue bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200/70"></span>
+        </div>
 
-          <form id="directForm" class="space-y-4" onsubmit="event.preventDefault(); openWhatsApp();">
-            
-            <!-- CAMPO ÚNICO INTELIGENTE: Telefone ou CNPJ -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label for="contactPhone" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                  Telefone ou CNPJ <span class="text-emerald-600">*</span>
-                </label>
-                <span id="inputModeHint" class="text-[11px] font-medium text-slate-400">
-                  Digite o celular ou os 14 dígitos do CNPJ
-                </span>
-              </div>
+        <div class="relative flex items-center">
+          <input 
+            type="text" 
+            id="unifiedInput" 
+            placeholder="Ellos / (83) 99999-9999 / 00.000.000/0001-00" 
+            onkeydown="handleUnifiedKeydown(event)"
+            class="block w-full pl-4 pr-16 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-semibold text-base sm:text-lg tabular-nums"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
+          />
 
-              <div class="relative flex items-stretch">
-                <!-- Ícone Dinâmico à Esquerda (Mostra ícone do WhatsApp quando validado, ou lupa/telefone) -->
-                <div id="phoneInputLeftBadge" class="inline-flex items-center justify-center pl-3.5 pr-2 rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 text-slate-500 transition-colors select-none shrink-0">
-                  <span id="phoneInputLeftIcon" class="flex items-center gap-1 text-xs font-semibold">
-                    🇧🇷
-                  </span>
-                </div>
-
-                <div class="relative flex-1 min-w-0">
-                  <input 
-                    type="tel" 
-                    id="contactPhone" 
-                    name="contactPhone" 
-                    required
-                    maxlength="18"
-                    inputmode="numeric"
-                    placeholder="(00) 00000-0000 ou CNPJ" 
-                    onkeydown="handleUnifiedKeydown(event)"
-                    class="block w-full pl-2.5 pr-9 py-3 border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-bold text-base sm:text-lg tabular-nums rounded-r-xl"
-                    autocomplete="off"
-                  />
-
-                  <!-- Spinner de carregamento CNPJ / Verificação -->
-                  <div id="unifiedSpinner" class="hidden absolute inset-y-0 right-8 pr-1 flex items-center pointer-events-none">
-                    <svg class="w-4 h-4 text-ellos-blue animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                    </svg>
-                  </div>
-
-                  <!-- Botão Limpar -->
-                  <button
-                    type="button"
-                    id="btnClearPhone"
-                    onclick="clearField('contactPhone')"
-                    class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-                    tabindex="-1"
-                    title="Limpar"
-                  >
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                    </svg>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Texto de Status: WhatsApp encontrado (verde) ou vermelho se inválido -->
-              <div id="whatsappStatusText" class="hidden mt-1.5 text-xs font-semibold flex items-center gap-1.5 fade-in"></div>
-
-              <!-- Resultado Compacto da Busca CNPJ (Números Verde/Vermelho + Rota) -->
-              <div id="cnpjResultCard" class="hidden mt-2.5 rounded-xl bg-slate-50/90 border border-slate-200/80 p-3 text-xs fade-in">
-              </div>
-            </div>
-
-            <!-- Campo Nome -->
-            <div>
-              <label for="contactName" class="block text-xs sm:text-sm font-semibold text-slate-700 mb-1.5">
-                Nome da Empresa ou Contato <span class="text-emerald-600">*</span>
-              </label>
-              <div class="relative">
-                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                  </svg>
-                </div>
-                <input 
-                  type="text" 
-                  id="contactName" 
-                  name="contactName" 
-                  required
-                  placeholder="Preenchido pelo CNPJ ou digite o nome..." 
-                  class="block w-full pl-10 pr-9 py-2.5 sm:py-3 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-medium text-base"
-                  autocomplete="name"
-                />
-                <button
-                  type="button"
-                  id="btnClearName"
-                  onclick="clearField('contactName')"
-                  class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
-                  tabindex="-1"
-                >
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            <!-- Mensagem Inicial + Modelos Rápidos -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label for="customMessage" class="block text-xs sm:text-sm font-semibold text-slate-700">
-                  Mensagem Inicial
-                </label>
-                <button
-                  type="button"
-                  onclick="insertNameTag()"
-                  class="text-[11px] text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 px-2 py-0.5 rounded-md font-semibold transition-colors"
-                  title="Inserir variável {nome} na mensagem"
-                >
-                  + Inserir {nome}
-                </button>
-              </div>
-
-              <!-- Pílulas de Template com Scroll Horizontal Touch -->
-              <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1.5 mb-1.5">
-                <button type="button" onclick="setTemplate('ola')" class="text-xs bg-slate-100 hover:bg-emerald-50 hover:text-emerald-700 border border-slate-200/90 px-2.5 py-1.5 rounded-xl font-medium transition-all active:scale-95 shrink-0 whitespace-nowrap">
-                  👋 Saudação
-                </button>
-                <button type="button" onclick="setTemplate('comercial')" class="text-xs bg-slate-100 hover:bg-sky-50 hover:text-ellos-blue border border-slate-200/90 px-2.5 py-1.5 rounded-xl font-medium transition-all active:scale-95 shrink-0 whitespace-nowrap">
-                  🏢 Comercial
-                </button>
-                <button type="button" onclick="setTemplate('orcamento')" class="text-xs bg-slate-100 hover:bg-sky-50 hover:text-ellos-blue border border-slate-200/90 px-2.5 py-1.5 rounded-xl font-medium transition-all active:scale-95 shrink-0 whitespace-nowrap">
-                  💊 Orçamento Farma
-                </button>
-                <button type="button" onclick="setTemplate('visita')" class="text-xs bg-slate-100 hover:bg-sky-50 hover:text-ellos-blue border border-slate-200/90 px-2.5 py-1.5 rounded-xl font-medium transition-all active:scale-95 shrink-0 whitespace-nowrap">
-                  🤝 Representante
-                </button>
-              </div>
-
-              <textarea 
-                id="customMessage" 
-                rows="3" 
-                class="block w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all text-base sm:text-sm leading-relaxed"
-              >Olá {nome}, tudo bem? Aqui é da Ellos Zap!</textarea>
-            </div>
-
-            <!-- Switch Salvar este contato -->
-            <div 
-              onclick="toggleSaveContactFromCard(event)"
-              class="p-3 sm:p-3.5 rounded-xl bg-emerald-50/70 border border-emerald-200/90 hover:border-emerald-300 transition-all cursor-pointer select-none flex items-center justify-between gap-3"
-            >
-              <div class="flex items-center gap-2.5 min-w-0">
-                <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shrink-0">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                  </svg>
-                </div>
-                <div class="min-w-0">
-                  <span class="text-sm font-bold text-slate-900 block leading-tight">
-                    Salvar este contato
-                  </span>
-                  <span class="text-xs text-slate-500 block mt-0.5 truncate">
-                    Guardar na agenda rápida ao iniciar conversa
-                  </span>
-                </div>
-              </div>
-
-              <label class="relative inline-flex items-center cursor-pointer shrink-0" onclick="event.stopPropagation()">
-                <input 
-                  type="checkbox" 
-                  id="saveContactCheckbox" 
-                  checked 
-                  class="sr-only peer"
-                >
-                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-              </label>
-            </div>
-
-            <!-- Botões de Ação Principal -->
-            <div class="pt-1 flex flex-col xs:flex-row gap-2">
-              <button 
-                type="submit" 
-                id="btnOpenWhatsApp"
-                class="flex-1 bg-gradient-to-r from-emerald-500 to-whatsapp hover:from-emerald-600 hover:to-emerald-700 text-white font-bold py-3.5 px-5 rounded-xl shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.98] text-base"
-              >
-                <svg class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24">
-                  <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.54 1.861.859 2.796.859 3.179 0 5.767-2.587 5.767-5.766.001-3.182-2.585-5.746-5.767-5.746zm3.377 8.21c-.144.405-.837.774-1.17.824-.312.045-.634.053-1.042-.072-.258-.079-.589-.204-1.002-.381-1.748-.755-2.883-2.525-2.97-2.642-.088-.117-.714-.951-.714-1.815 0-.865.452-1.291.614-1.468.161-.177.352-.221.469-.221.118 0 .235.001.338.006.107.005.25-.041.391.298.147.353.5 1.222.544 1.31.044.089.073.192.015.309-.059.118-.088.192-.176.294-.088.103-.186.23-.265.309-.089.088-.181.185-.078.362.103.176.457.755.981 1.222.674.601 1.242.788 1.419.876.177.088.279.073.382-.044.103-.118.441-.515.559-.691.118-.177.236-.147.397-.089.162.059 1.029.485 1.206.574.177.088.294.132.338.206.044.074.044.426-.1 1.831z"/>
-                </svg>
-                <span>Conversar no WhatsApp</span>
-              </button>
-
-              <button 
-                type="button" 
-                onclick="copyWhatsAppLink()"
-                class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-3.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-all text-sm active:scale-[0.98] shrink-0"
-                title="Copiar link direto da conversa"
-              >
-                <svg class="w-4 h-4 text-slate-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                </svg>
-                <span id="copyText">Copiar Link</span>
-              </button>
-            </div>
-          </form>
-        </section>
-
-        <!-- CARD 2: Agenda de Contatos Salvos -->
-        <section id="contactsSection" class="bg-white rounded-2xl sm:rounded-3xl shadow-xs border border-slate-200/80 p-4 sm:p-5 scroll-mt-20">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <h2 class="text-sm sm:text-base font-bold text-slate-900">Contatos Salvos</h2>
-              <span id="savedCountBadge" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 tabular-nums">0</span>
-            </div>
-            <button onclick="clearHistory()" class="text-xs font-medium text-slate-400 hover:text-rose-500 transition-colors">
-              Limpar tudo
-            </button>
-          </div>
-
-          <div class="relative mb-3">
-            <input 
-              type="text" 
-              id="searchHistoryInput" 
-              oninput="filterHistory()"
-              placeholder="Buscar contato salvo por nome ou telefone..." 
-              class="w-full pl-9 pr-3.5 py-2 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all placeholder-slate-400"
-            >
-            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          <!-- Spinner de Busca -->
+          <div id="searchSpinner" class="hidden absolute right-10 flex items-center pointer-events-none">
+            <svg class="w-4 h-4 text-ellos-blue animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
             </svg>
           </div>
 
-          <div id="historyList" class="space-y-2 max-h-[340px] overflow-y-auto pr-0.5">
-            <p id="emptyHistory" class="text-xs text-slate-400 italic py-4 text-center">Nenhum contato salvo ainda.</p>
-          </div>
-        </section>
-
-      </div>
-
-      <!-- COLUNA SECUNDÁRIA: Prévia em Tempo Real do WhatsApp -->
-      <div class="col-span-1 lg:col-span-5 lg:sticky lg:top-20">
-        <div class="bg-slate-900 rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-lg border border-slate-800 text-white">
-          <div class="flex items-center justify-between pb-2.5 border-b border-slate-800 px-1">
-            <div class="flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-            </div>
-            <span class="text-[10px] font-semibold text-slate-400 tracking-widest uppercase">Prévia do WhatsApp</span>
-          </div>
-
-          <!-- Topo do Chat WhatsApp -->
-          <div class="bg-[#075e54] rounded-t-xl p-2.5 mt-2.5 flex items-center justify-between">
-            <div class="flex items-center gap-2 min-w-0">
-              <div class="relative shrink-0">
-                <div class="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs" id="previewAvatar">
-                  EL
-                </div>
-                <span class="absolute bottom-0 right-0 w-2 h-2 bg-emerald-400 rounded-full border border-[#075e54]"></span>
-              </div>
-              <div class="min-w-0">
-                <div class="text-xs sm:text-sm font-semibold truncate text-white leading-tight" id="previewHeaderName">
-                  Nome do Contato
-                </div>
-                <div class="text-[11px] text-emerald-200 truncate tabular-nums" id="previewHeaderPhone">
-                  +55 (00) 00000-0000
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center gap-2.5 text-white/80 shrink-0 pr-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-              </svg>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-              </svg>
-            </div>
-          </div>
-
-          <!-- Papel de Parede + Balão da Mensagem -->
-          <div class="whatsapp-bg p-3 rounded-b-xl min-h-[155px] sm:min-h-[195px] flex flex-col justify-between text-slate-800">
-            <div class="text-center my-0.5">
-              <span class="text-[10px] bg-white/85 text-slate-600 px-2 py-0.5 rounded shadow-2xs font-medium">
-                Hoje
-              </span>
-            </div>
-
-            <div class="max-w-[90%] self-end bg-[#d9fdd3] rounded-2xl rounded-tr-none p-2.5 shadow-xs chat-bubble-tail my-1.5">
-              <p class="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed break-words text-slate-900" id="previewMessageText">
-                Olá {nome}, tudo bem? Aqui é da Ellos Zap!
-              </p>
-              <div class="flex justify-end items-center gap-1 mt-1 text-[10px] text-slate-500 tabular-nums">
-                <span id="previewTime">10:40</span>
-                <svg class="w-3.5 h-3.5 text-sky-500 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7m-7 6l2 2m4-4l-6 6" />
-                </svg>
-              </div>
-            </div>
-
-            <div class="mt-2 flex items-center gap-2 bg-white/90 rounded-full px-3 py-1.5 shadow-2xs">
-              <span class="text-slate-400 text-xs">😀</span>
-              <span class="text-slate-400 text-xs flex-1 truncate">Mensagem</span>
-              <span class="text-emerald-600 text-xs font-bold">➤</span>
-            </div>
-          </div>
+          <!-- Botão Limpar -->
+          <button
+            type="button"
+            id="btnClearInput"
+            onclick="clearAll()"
+            class="hidden absolute right-3 p-1 text-slate-400 hover:text-slate-600 transition-colors"
+            title="Limpar"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </button>
         </div>
+
+        <!-- Texto de Status: WhatsApp encontrado (verde) ou vermelho se inválido -->
+        <div id="whatsappStatusText" class="hidden mt-2 text-xs font-semibold flex items-center gap-1.5 fade-in"></div>
       </div>
 
-    </div>
+      <!-- LISTA DE RESULTADOS / FILIAIS (Nome, Endereço, Telefone Verde/Vermelho) -->
+      <div id="resultsContainer" class="hidden space-y-2.5 max-h-[60vh] overflow-y-auto pr-0.5 fade-in"></div>
+
+      <!-- BOTÃO DO WHATSAPP (Branco quando inativo/sem WhatsApp · Verde quando WhatsApp válido) -->
+      <div class="pt-1">
+        <button 
+          type="button" 
+          id="btnWhatsAppBar"
+          onclick="openSelectedWhatsApp()"
+          disabled
+          class="w-full py-4 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2.5 transition-all border-2 bg-white text-slate-400 border-slate-200 cursor-not-allowed"
+        >
+          <svg class="w-6 h-6 fill-current shrink-0" viewBox="0 0 24 24">
+            <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.54 1.861.859 2.796.859 3.179 0 5.767-2.587 5.767-5.766.001-3.182-2.585-5.746-5.767-5.746zm3.377 8.21c-.144.405-.837.774-1.17.824-.312.045-.634.053-1.042-.072-.258-.079-.589-.204-1.002-.381-1.748-.755-2.883-2.525-2.97-2.642-.088-.117-.714-.951-.714-1.815 0-.865.452-1.291.614-1.468.161-.177.352-.221.469-.221.118 0 .235.001.338.006.107.005.25-.041.391.298.147.353.5 1.222.544 1.31.044.089.073.192.015.309-.059.118-.088.192-.176.294-.088.103-.186.23-.265.309-.089.088-.181.185-.078.362.103.176.457.755.981 1.222.674.601 1.242.788 1.419.876.177.088.279.073.382-.044.103-.118.441-.515.559-.691.118-.177.236-.147.397-.089.162.059 1.029.485 1.206.574.177.088.294.132.338.206.044.074.044.426-.1 1.831z"/>
+          </svg>
+          <span id="btnWhatsAppLabel">WhatsApp</span>
+        </button>
+      </div>
+
+    </section>
   </main>
 
-  <!-- Rodapé -->
-  <footer class="bg-white border-t border-slate-200/80 py-4 mt-4 sm:mt-8 text-center text-xs text-slate-500">
-    <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <div class="flex items-center gap-2 font-brand">
-        <img src="assets/logo.png?v=3" alt="Ellos Zap" class="w-5 h-5 rounded-full object-contain">
-        <span class="font-bold text-slate-800"><span class="text-ellos-blue">Ellos</span> <span class="text-whatsapp">Zap</span> • <span class="text-ellos-blue">connecTI</span></span>
-      </div>
-      <p class="text-slate-400 text-[11px] font-sans">Conexão Comercial Direta via WhatsApp</p>
-    </div>
-  </footer>
-
-  <!-- Script da Aplicação -->
   <script>
     const WHATSAPP_SVG = `<svg class="w-4 h-4 fill-current shrink-0" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.969.54 1.861.859 2.796.859 3.179 0 5.767-2.587 5.767-5.766.001-3.182-2.585-5.746-5.767-5.746zm3.377 8.21c-.144.405-.837.774-1.17.824-.312.045-.634.053-1.042-.072-.258-.079-.589-.204-1.002-.381-1.748-.755-2.883-2.525-2.97-2.642-.088-.117-.714-.951-.714-1.815 0-.865.452-1.291.614-1.468.161-.177.352-.221.469-.221.118 0 .235.001.338.006.107.005.25-.041.391.298.147.353.5 1.222.544 1.31.044.089.073.192.015.309-.059.118-.088.192-.176.294-.088.103-.186.23-.265.309-.089.088-.181.185-.078.362.103.176.457.755.981 1.222.674.601 1.242.788 1.419.876.177.088.279.073.382-.044.103-.118.441-.515.559-.691.118-.177.236-.147.397-.089.162.059 1.029.485 1.206.574.177.088.294.132.338.206.044.074.044.426-.1 1.831z"/></svg>`;
-
-    const TEMPLATES = {
-      ola: "Olá {nome}, tudo bem? Aqui é da Ellos Zap!",
-      comercial: "Olá, equipe da {nome}! Tudo bem? Gostaria de falar com o responsável pelo setor comercial/compras.",
-      orcamento: "Olá {nome}, tudo bem? Aqui é da Ellos Zap Farma. Segue a confirmação da sua receita e o orçamento dos seus medicamentos.",
-      visita: "Olá {nome}! Aqui é o representante da Ellos Zap. Gostaria de verificar a disponibilidade para uma rápida conversa hoje."
-    };
 
     const VALID_DDDS = new Set([
       11,12,13,14,15,16,17,18,19,21,22,24,27,28,31,32,33,34,35,37,38,
@@ -523,49 +197,28 @@
       71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99
     ]);
 
-    let debounceVerificationTimer = null;
-    let lastLookedUpCnpj = '';
-    let discoveredCnpjPhones = [];
-    let selectedPillIndex = 0;
+    const phoneValidationCache = new Map();
+    let searchDebounceTimer = null;
+    let currentSearchId = 0;
+    let currentBranches = [];
+    let selectedBranchIdx = 0;
+    let selectedPhoneIdx = 0;
 
     document.addEventListener('DOMContentLoaded', () => {
-      initSaveCheckbox();
-      loadHistory();
-      updatePreview();
-
-      const nameInput = document.getElementById('contactName');
-      const phoneInput = document.getElementById('contactPhone');
-
-      nameInput.addEventListener('input', () => {
-        toggleClearBtn('contactName', 'btnClearName');
-        updatePreview();
-      });
-
-      phoneInput.addEventListener('input', (e) => {
-        handleUnifiedInput(e.target);
-      });
-
-      document.getElementById('customMessage').addEventListener('input', () => {
-        updatePreview();
-      });
-
-      const now = new Date();
-      document.getElementById('previewTime').textContent = 
-        `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      const inp = document.getElementById('unifiedInput');
+      inp.addEventListener('input', () => handleInput(inp));
     });
 
     function handleUnifiedKeydown(event) {
       if (event.key === 'Enter') {
-        const digits = document.getElementById('contactPhone').value.replace(/\D/g, '');
-        if (digits.length === 14) {
-          event.preventDefault();
-          lookupCnpjTrajectory(digits);
-        }
+        event.preventDefault();
+        clearTimeout(searchDebounceTimer);
+        triggerUnifiedSearch(true);
       }
     }
 
-    // Máscara inteligente unificada: até 11 dígitos = Telefone | 12 a 14 dígitos = CNPJ
-    function formatUnifiedValue(digits) {
+    // Formata apenas se o usuário estiver digitando exclusivamente números/pontuação de telefone ou CNPJ
+    function formatNumericMask(digits) {
       const d = digits.replace(/\D/g, '').substring(0, 14);
       if (d.length <= 11) {
         if (d.length > 6) {
@@ -580,7 +233,6 @@
         }
         return '';
       } else {
-        // Formato CNPJ: 00.000.000/0000-00
         if (d.length > 12) {
           return `${d.substring(0,2)}.${d.substring(2,5)}.${d.substring(5,8)}/${d.substring(8,12)}-${d.substring(12,14)}`;
         }
@@ -588,487 +240,387 @@
       }
     }
 
-    function handleUnifiedInput(input) {
-      const digits = input.value.replace(/\D/g, '').substring(0, 14);
-      input.value = formatUnifiedValue(digits);
-      toggleClearBtn('contactPhone', 'btnClearPhone');
+    function handleInput(input) {
+      const raw = input.value;
+      const btnClear = document.getElementById('btnClearInput');
+      const correctedBadge = document.getElementById('correctedBadge');
+      if (correctedBadge) correctedBadge.classList.add('hidden');
 
-      const hint = document.getElementById('inputModeHint');
-
-      clearTimeout(debounceVerificationTimer);
-
-      if (digits.length === 0) {
-        setInputVisualState('neutral');
-        if (hint) hint.textContent = 'Digite o celular ou os 14 dígitos do CNPJ';
-        updatePreview();
-        return;
-      }
-
-      if (digits.length > 11) {
-        // Modo CNPJ
-        setInputVisualState('cnpj');
-        if (hint) hint.textContent = digits.length === 14 ? 'Buscando CNPJ no Google...' : `CNPJ (${digits.length}/14 dígitos)`;
-        if (digits.length === 14 && digits !== lastLookedUpCnpj) {
-          lookupCnpjTrajectory(digits);
-        }
-        return;
-      }
-
-      // Modo Telefone (<= 11 dígitos)
-      if (hint) hint.textContent = 'Telefone / WhatsApp';
-      updatePreview();
-
-      if (digits.length >= 10) {
-        debounceVerificationTimer = setTimeout(() => {
-          validateTypedPhone(digits);
-        }, 250);
+      if (raw.trim().length > 0) {
+        btnClear.classList.remove('hidden');
       } else {
-        setInputVisualState('neutral');
+        btnClear.classList.add('hidden');
+        clearResultsUI();
+        return;
+      }
+
+      const hasLetters = /[a-zA-ZÀ-ÿ]/.test(raw);
+      clearTimeout(searchDebounceTimer);
+
+      if (!hasLetters) {
+        // Modo numérico (Telefone ou CNPJ)
+        const digits = raw.replace(/\D/g, '').substring(0, 14);
+        if (digits.length > 0) {
+          input.value = formatNumericMask(digits);
+        } else {
+          input.value = '';
+          clearResultsUI();
+          return;
+        }
+
+        if (digits.length === 14) {
+          // CNPJ completo: dispara imediatamente
+          triggerUnifiedSearch(false);
+        } else if (digits.length >= 10 && digits.length <= 11) {
+          // Telefone completo (10 ou 11 dígitos)
+          searchDebounceTimer = setTimeout(() => {
+            triggerUnifiedSearch(false);
+          }, 300);
+        } else {
+          clearResultsUI();
+        }
+      } else {
+        // Modo Nome (ex: "Pizza Mestre" ou "Pizza Mestro")
+        const trimmed = raw.trim();
+        if (trimmed.length >= 3) {
+          searchDebounceTimer = setTimeout(() => {
+            triggerUnifiedSearch(false);
+          }, 480);
+        } else {
+          clearResultsUI();
+        }
       }
     }
 
-    // Define a cor do número no input (Verde com ícone WhatsApp + texto "WhatsApp encontrado" se válido, Vermelho se inválido)
-    function setInputVisualState(state, fromCnpj = false) {
-      const input = document.getElementById('contactPhone');
-      const badge = document.getElementById('phoneInputLeftBadge');
-      const icon = document.getElementById('phoneInputLeftIcon');
+    function clearAll() {
+      const inp = document.getElementById('unifiedInput');
+      const btnClear = document.getElementById('btnClearInput');
+      const correctedBadge = document.getElementById('correctedBadge');
+      clearTimeout(searchDebounceTimer);
+      currentSearchId++;
+      inp.value = '';
+      btnClear.classList.add('hidden');
+      if (correctedBadge) correctedBadge.classList.add('hidden');
+      clearResultsUI();
+      inp.focus();
+    }
+
+    function clearResultsUI() {
+      currentBranches = [];
+      selectedBranchIdx = 0;
+      selectedPhoneIdx = 0;
+      const container = document.getElementById('resultsContainer');
       const statusText = document.getElementById('whatsappStatusText');
-      if (!input || !badge || !icon) return;
-
-      const validCount = discoveredCnpjPhones.filter(p => p.isWhatsAppValid).length;
-
-      if (state === 'valid') {
-        input.className = "block w-full pl-2.5 pr-9 py-3 border border-emerald-500 bg-emerald-50/25 text-emerald-600 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all font-bold text-base sm:text-lg tabular-nums rounded-r-xl";
-        badge.className = "inline-flex items-center justify-center pl-3.5 pr-2 rounded-l-xl border border-r-0 border-emerald-500 bg-emerald-50 text-whatsapp transition-colors select-none shrink-0";
-        icon.innerHTML = WHATSAPP_SVG;
-        if (statusText) {
-          statusText.className = "mt-1.5 text-xs font-semibold text-emerald-600 flex items-center gap-1.5 fade-in";
-          if (fromCnpj || discoveredCnpjPhones.length > 0) {
-            const label = validCount > 1
-              ? 'WhatsApp encontrado · Os números com WhatsApp ficam na cor verde'
-              : 'WhatsApp encontrado · O número com WhatsApp fica na cor verde';
-            statusText.innerHTML = `${WHATSAPP_SVG} <span>${label}</span>`;
-          } else {
-            statusText.innerHTML = `${WHATSAPP_SVG} <span>WhatsApp encontrado</span>`;
-          }
-        }
-      } else if (state === 'invalid') {
-        input.className = "block w-full pl-2.5 pr-9 py-3 border border-rose-400 bg-rose-50/25 text-rose-600 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-all font-bold text-base sm:text-lg tabular-nums rounded-r-xl";
-        badge.className = "inline-flex items-center justify-center pl-3.5 pr-2 rounded-l-xl border border-r-0 border-rose-400 bg-rose-50 text-rose-500 transition-colors select-none shrink-0";
-        icon.innerHTML = `<span class="text-xs font-bold">+55</span>`;
-        if (statusText) {
-          statusText.className = "mt-1.5 text-xs font-semibold text-rose-600 flex items-center gap-1.5 fade-in";
-          statusText.innerHTML = `<span>WhatsApp não encontrado</span>`;
-        }
-      } else if (state === 'cnpj') {
-        input.className = "block w-full pl-2.5 pr-9 py-3 border border-ellos-blue bg-sky-50/30 text-ellos-blue placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-bold text-base sm:text-lg tabular-nums rounded-r-xl";
-        badge.className = "inline-flex items-center justify-center pl-3.5 pr-2 rounded-l-xl border border-r-0 border-ellos-blue bg-sky-50 text-ellos-blue transition-colors select-none shrink-0";
-        icon.innerHTML = `<span class="text-[11px] font-extrabold">CNPJ</span>`;
-        if (statusText) statusText.className = "hidden";
-      } else {
-        input.className = "block w-full pl-2.5 pr-9 py-3 border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-bold text-base sm:text-lg tabular-nums rounded-r-xl";
-        badge.className = "inline-flex items-center justify-center pl-3.5 pr-2 rounded-l-xl border border-r-0 border-slate-300 bg-slate-50 text-slate-500 transition-colors select-none shrink-0";
-        icon.innerHTML = `<span class="text-xs font-semibold">🇧🇷</span>`;
-        if (statusText) statusText.className = "hidden";
+      const spinner = document.getElementById('searchSpinner');
+      if (container) {
+        container.classList.add('hidden');
+        container.innerHTML = '';
       }
+      if (statusText) {
+        statusText.className = 'hidden';
+        statusText.innerHTML = '';
+      }
+      if (spinner) spinner.classList.add('hidden');
+      updateWhatsAppBarState();
     }
 
-    // Verifica se um número (10 ou 11 dígitos) é um WhatsApp válido
+    // Valida se um número (10 ou 11 dígitos) tem WhatsApp válido
     async function checkPhoneValidity(cleanDigits) {
       const d = (cleanDigits || '').replace(/\D/g, '');
       if (d.length < 10 || d.length > 11) return false;
+      if (phoneValidationCache.has(d)) return phoneValidationCache.get(d);
 
       const ddd = parseInt(d.substring(0, 2), 10);
-      if (!VALID_DDDS.has(ddd)) return false;
-
-      const isMobileStructure = (d.length === 11 && d[2] === '9');
-
-      // Se não for celular (ex: fixo de 10 dígitos), tenta consultar 2Chat mas por padrão fixo não é celular WhatsApp
-      if (!isMobileStructure) {
-        try {
-          const res = await fetch(`/api/2chat/check?phone=${d}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.on_whatsapp === true || data.exists === true) return true;
-          }
-        } catch (e) {}
+      if (!VALID_DDDS.has(ddd)) {
+        phoneValidationCache.set(d, false);
         return false;
       }
 
-      // É celular (11 dígitos com 9): consulta 2Chat; se 2Chat confirmar false, retorna false; caso contrário, válido
+      const isMobileStructure = (d.length === 11 && d[2] === '9');
+
       try {
         const res = await fetch(`/api/2chat/check?phone=${d}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.on_whatsapp === false || data.exists === false) return false;
-          if (data.on_whatsapp === true || data.exists === true) return true;
+          if (data.on_whatsapp === true || data.exists === true) {
+            phoneValidationCache.set(d, true);
+            return true;
+          }
+          if (data.on_whatsapp === false || data.exists === false) {
+            phoneValidationCache.set(d, false);
+            return false;
+          }
         }
       } catch (e) {}
 
-      return true;
+      // Fallback estrutural ANATEL/WhatsApp: celular (11 dígitos com 9) = verde (válido); fixo (10 dígitos) = vermelho
+      phoneValidationCache.set(d, isMobileStructure);
+      return isMobileStructure;
     }
 
-    async function validateTypedPhone(digits) {
-      const currentDigits = getCleanPhone();
-      if (currentDigits !== digits) return;
+    async function triggerUnifiedSearch(replaceInputOnCorrection = false) {
+      const inp = document.getElementById('unifiedInput');
+      const rawQuery = inp.value.trim();
+      if (!rawQuery) return;
 
-      const isValid = await checkPhoneValidity(digits);
-      if (getCleanPhone() === digits) {
-        setInputVisualState(isValid ? 'valid' : 'invalid');
-      }
-    }
-
-    function toggleClearBtn(inputId, btnId) {
-      const inp = document.getElementById(inputId);
-      const btn = document.getElementById(btnId);
-      if (!inp || !btn) return;
-      if (inp.value.length > 0) {
-        btn.classList.remove('hidden');
-      } else {
-        btn.classList.add('hidden');
-      }
-    }
-
-    function clearField(inputId) {
-      const inp = document.getElementById(inputId);
-      if (!inp) return;
-      inp.value = '';
-      if (inputId === 'contactName') toggleClearBtn('contactName', 'btnClearName');
-      if (inputId === 'contactPhone') {
-        toggleClearBtn('contactPhone', 'btnClearPhone');
-        setInputVisualState('neutral');
-        document.getElementById('inputModeHint').textContent = 'Digite o celular ou os 14 dígitos do CNPJ';
-        lastLookedUpCnpj = '';
-      }
-      updatePreview();
-      inp.focus();
-    }
-
-    function resetFormFields() {
-      document.getElementById('contactName').value = '';
-      document.getElementById('contactPhone').value = '';
-      toggleClearBtn('contactName', 'btnClearName');
-      toggleClearBtn('contactPhone', 'btnClearPhone');
-      setInputVisualState('neutral');
-      document.getElementById('inputModeHint').textContent = 'Digite o celular ou os 14 dígitos do CNPJ';
-      const card = document.getElementById('cnpjResultCard');
-      if (card) {
-        card.classList.add('hidden');
-        card.innerHTML = '';
-      }
-      lastLookedUpCnpj = '';
-      discoveredCnpjPhones = [];
-      updatePreview();
-    }
-
-    function scrollToContacts() {
-      const el = document.getElementById('contactsSection');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-
-    function insertNameTag() {
-      const ta = document.getElementById('customMessage');
-      if (!ta) return;
-      const start = ta.selectionStart || ta.value.length;
-      const end = ta.selectionEnd || ta.value.length;
-      const text = ta.value;
-      ta.value = text.substring(0, start) + '{nome}' + text.substring(end);
-      ta.focus();
-      ta.selectionStart = ta.selectionEnd = start + 6;
-      updatePreview();
-    }
-
-    function getCleanPhone() {
-      const phoneInput = document.getElementById('contactPhone').value;
-      return phoneInput.replace(/\D/g, '');
-    }
-
-    function toggleSaveContactFromCard(event) {
-      if (event.target.id === 'saveContactCheckbox' || event.target.closest('label')) {
-        return;
-      }
-      const chk = document.getElementById('saveContactCheckbox');
-      if (chk) {
-        chk.checked = !chk.checked;
-        chk.dispatchEvent(new Event('change'));
-      }
-    }
-
-    function getParsedMessage() {
-      const name = document.getElementById('contactName').value.trim() || 'Cliente';
-      const rawMsg = document.getElementById('customMessage').value;
-      return rawMsg.replace(/{nome}/gi, name);
-    }
-
-    function generateWhatsAppUrl() {
-      const cleanPhone = getCleanPhone();
-      const message = encodeURIComponent(getParsedMessage());
-      return `https://wa.me/55${cleanPhone}?text=${message}`;
-    }
-
-    function updatePreview() {
-      const name = document.getElementById('contactName').value.trim();
-      const cleanDigits = getCleanPhone();
-      const phoneFormatted = (cleanDigits.length <= 11 && cleanDigits.length > 0)
-        ? formatUnifiedValue(cleanDigits)
-        : '';
-      const finalMsg = getParsedMessage();
-
-      document.getElementById('previewHeaderName').textContent = name || 'Nome do Contato';
-      document.getElementById('previewHeaderPhone').textContent = phoneFormatted ? `+55 ${phoneFormatted}` : '+55 (00) 00000-0000';
-
-      if (name) {
-        const parts = name.split(' ').filter(Boolean);
-        const initials = parts.length > 1 ? (parts[0][0] + parts[1][0]) : parts[0].substring(0, 2);
-        document.getElementById('previewAvatar').textContent = initials.toUpperCase();
-      } else {
-        document.getElementById('previewAvatar').textContent = 'EL';
-      }
-
-      document.getElementById('previewMessageText').textContent = finalMsg;
-    }
-
-    function setTemplate(key) {
-      if (TEMPLATES[key]) {
-        document.getElementById('customMessage').value = TEMPLATES[key];
-        updatePreview();
-      }
-    }
-
-    function openWhatsApp() {
-      const name = document.getElementById('contactName').value.trim();
-      const cleanPhone = getCleanPhone();
-
-      if (cleanPhone.length === 14) {
-        lookupCnpjTrajectory(cleanPhone);
-        return;
-      }
-
-      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-        setInputVisualState('invalid');
-        document.getElementById('contactPhone').focus();
-        return;
-      }
-
-      if (!name) {
-        document.getElementById('contactName').focus();
-        return;
-      }
-
-      const url = generateWhatsAppUrl();
-
-      const saveCheckbox = document.getElementById('saveContactCheckbox');
-      const shouldSave = saveCheckbox ? saveCheckbox.checked : true;
-      if (shouldSave) {
-        saveToHistory({
-          name: name,
-          phone: formatUnifiedValue(cleanPhone),
-          timestamp: new Date().toISOString()
-        });
-      }
-
-      window.open(url, '_blank');
-    }
-
-    function copyWhatsAppLink() {
-      const cleanPhone = getCleanPhone();
-      if (cleanPhone.length < 10 || cleanPhone.length > 11) {
-        setInputVisualState('invalid');
-        document.getElementById('contactPhone').focus();
-        return;
-      }
-
-      const url = generateWhatsAppUrl();
-      navigator.clipboard.writeText(url).then(() => {
-        const copyText = document.getElementById('copyText');
-        const original = copyText.textContent;
-        copyText.textContent = 'Copiado!';
-        setTimeout(() => {
-          copyText.textContent = original;
-        }, 2000);
-      });
-    }
-
-    // =========================================================
-    // Trajeto CNPJ Unificado -> Receita (Nome) -> Google (Fones)
-    // =========================================================
-    function renderDiscoveredPhonesPills(displayName) {
-      const container = document.getElementById('cnpjPhonesListContainer');
-      if (!container) return;
-
-      const safeDisplayName = (displayName || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-
-      if (!discoveredCnpjPhones || discoveredCnpjPhones.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-
-      const pillsHtml = discoveredCnpjPhones.map((p, idx) => {
-        const isSelected = idx === selectedPillIndex;
-        // Verde com ícone do WhatsApp à frente + "WhatsApp encontrado" se válido; Vermelho sem ícone se não for
-        if (p.isWhatsAppValid) {
-          const ringCls = isSelected
-            ? 'bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-300 shadow-xs'
-            : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300';
-          return `
-            <button
-              type="button"
-              onclick="selectDiscoveredPhone(${idx}, '${safeDisplayName}')"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${ringCls}"
-            >
-              ${WHATSAPP_SVG}
-              <span>${p.formatted}</span>
-              <span class="text-[11px] font-semibold opacity-95">· WhatsApp encontrado</span>
-            </button>
-          `;
-        } else {
-          const ringCls = isSelected
-            ? 'bg-rose-600 text-white border-rose-600 ring-2 ring-rose-300 shadow-xs'
-            : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-300';
-          return `
-            <button
-              type="button"
-              onclick="selectDiscoveredPhone(${idx}, '${safeDisplayName}')"
-              class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${ringCls}"
-            >
-              <span>${p.formatted}</span>
-            </button>
-          `;
-        }
-      }).join('');
-
-      container.innerHTML = `<div class="flex flex-wrap gap-1.5 pt-2 border-t border-slate-200/80">${pillsHtml}</div>`;
-    }
-
-    function selectDiscoveredPhone(idx, companyName) {
-      const p = discoveredCnpjPhones[idx];
-      if (!p) return;
-      selectedPillIndex = idx;
-
-      const nameInput = document.getElementById('contactName');
-      const phoneInput = document.getElementById('contactPhone');
-
-      if (companyName && nameInput) {
-        nameInput.value = companyName;
-        toggleClearBtn('contactName', 'btnClearName');
-      }
-
-      if (phoneInput) {
-        phoneInput.value = p.formatted;
-        toggleClearBtn('contactPhone', 'btnClearPhone');
-        setInputVisualState(p.isWhatsAppValid ? 'valid' : 'invalid', true);
-      }
-
-      renderDiscoveredPhonesPills(companyName || (nameInput ? nameInput.value : ''));
-      updatePreview();
-    }
-
-    async function lookupCnpjTrajectory(cleanCnpj) {
-      const spinner = document.getElementById('unifiedSpinner');
-      const card = document.getElementById('cnpjResultCard');
-      const hint = document.getElementById('inputModeHint');
-      const formattedCnpj = formatUnifiedValue(cleanCnpj);
-
-      lastLookedUpCnpj = cleanCnpj;
+      const searchId = ++currentSearchId;
+      const spinner = document.getElementById('searchSpinner');
+      const correctedBadge = document.getElementById('correctedBadge');
       if (spinner) spinner.classList.remove('hidden');
-      if (hint) hint.textContent = `Consultando CNPJ ${formattedCnpj}...`;
 
       try {
-        const res = await fetch(`/api/2chat/cnpj?cnpj=${cleanCnpj}`);
+        const res = await fetch(`/api/2chat/search?q=${encodeURIComponent(rawQuery)}`);
         const data = await res.json();
+        if (searchId !== currentSearchId) return;
 
-        if (!res.ok || data.error) {
-          setInputVisualState('invalid');
-          if (hint) hint.textContent = 'CNPJ não encontrado';
-          if (card) card.classList.add('hidden');
+        if (!res.ok || data.error || !Array.isArray(data.branches) || data.branches.length === 0) {
+          currentBranches = [];
+          renderBranchesList();
+          updateStatusAndBar();
           return;
         }
 
-        const comp = data.company || {};
-        const gplace = data.google_place || {};
-        const rawPhones = Array.isArray(data.phones) ? data.phones : [];
-        const displayName = comp.display_name || comp.nome_fantasia || comp.razao_social || 'Empresa';
+        // Se foi busca por nome e o Google corrigiu a grafia (ex: "Pizza Mestro" -> "Pizza Mestre")
+        if (data.mode === 'name' && data.was_corrected && data.resolved_name) {
+          if (correctedBadge) {
+            correctedBadge.textContent = `Corrigido: ${data.resolved_name}`;
+            correctedBadge.classList.remove('hidden');
+          }
+          if (replaceInputOnCorrection) {
+            inp.value = data.resolved_name;
+          }
+        } else if (correctedBadge) {
+          correctedBadge.classList.add('hidden');
+        }
 
-        // Preenche o nome da empresa vindo da Receita Federal
-        const nameInput = document.getElementById('contactName');
-        nameInput.value = displayName;
-        toggleClearBtn('contactName', 'btnClearName');
+        // Valida os telefones de cada filial retornada
+        const validatedBranches = await Promise.all(data.branches.map(async (b) => {
+          const rawPhones = Array.isArray(b.phones) ? b.phones : [];
+          const phones = await Promise.all(rawPhones.map(async (p) => {
+            const cleanP = (p.phone || '').replace(/\D/g, '');
+            const isValid = await checkPhoneValidity(cleanP);
+            return {
+              ...p,
+              phone: cleanP,
+              formatted: p.formatted || formatNumericMask(cleanP),
+              isWhatsAppValid: isValid
+            };
+          }));
 
-        // Valida em paralelo cada telefone retornado pelo Google (se é celular com WhatsApp válido)
-        discoveredCnpjPhones = await Promise.all(rawPhones.map(async (p) => {
-          const cleanP = (p.phone || '').replace(/\D/g, '');
-          const isValid = await checkPhoneValidity(cleanP);
+          // Ordena celulares com WhatsApp válido (verdes) primeiro
+          phones.sort((x, y) => (y.isWhatsAppValid ? 1 : 0) - (x.isWhatsAppValid ? 1 : 0));
+
           return {
-            ...p,
-            phone: cleanP,
-            formatted: p.formatted || formatUnifiedValue(cleanP),
-            isWhatsAppValid: isValid
+            name: b.name || data.resolved_name || 'Empresa',
+            cnpj: b.cnpj || null,
+            address: b.address || '',
+            status: b.status || null,
+            maps_url: b.maps_url || null,
+            phones
           };
         }));
 
-        // Ordena priorizando os números de WhatsApp válidos (verdes) primeiro
-        discoveredCnpjPhones.sort((a, b) => (b.isWhatsAppValid ? 1 : 0) - (a.isWhatsAppValid ? 1 : 0));
+        if (searchId !== currentSearchId) return;
+        currentBranches = validatedBranches;
 
-        selectedPillIndex = 0;
-        const firstPhone = discoveredCnpjPhones[0] || null;
-
-        if (firstPhone) {
-          const phoneInput = document.getElementById('contactPhone');
-          phoneInput.value = firstPhone.formatted;
-          toggleClearBtn('contactPhone', 'btnClearPhone');
-          setInputVisualState(firstPhone.isWhatsAppValid ? 'valid' : 'invalid', true);
-          if (hint) hint.textContent = `CNPJ ${formattedCnpj}`;
-        } else {
-          setInputVisualState('invalid', true);
-          if (hint) hint.textContent = `CNPJ ${formattedCnpj}`;
+        // Seleciona automaticamente a primeira filial que tenha WhatsApp válido (ou a primeira da lista)
+        selectedBranchIdx = 0;
+        selectedPhoneIdx = 0;
+        for (let i = 0; i < currentBranches.length; i++) {
+          const validPIdx = currentBranches[i].phones.findIndex(p => p.isWhatsAppValid);
+          if (validPIdx !== -1) {
+            selectedBranchIdx = i;
+            selectedPhoneIdx = validPIdx;
+            break;
+          }
         }
 
-        updatePreview();
-
-        // Monta cabeçalho enxuto da empresa + Rota + Números coloridos (sem mensagens de alerta)
-        let statusHtml = '';
-        if (gplace.status) {
-          const isOpen = /aberto/i.test(gplace.status) && !/fechado/i.test(gplace.status);
-          const statusColors = isOpen
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-            : 'bg-amber-50 text-amber-800 border-amber-200';
-          const dotColor = isOpen ? 'bg-emerald-500' : 'bg-amber-500';
-          statusHtml = `
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-semibold border ${statusColors}">
-              <span class="w-1.5 h-1.5 rounded-full ${dotColor}"></span>
-              <span>${gplace.status}</span>
-            </span>
-          `;
+        renderBranchesList();
+        updateStatusAndBar();
+      } catch (err) {
+        if (searchId !== currentSearchId) return;
+        currentBranches = [];
+        renderBranchesList();
+        updateStatusAndBar();
+      } finally {
+        if (searchId === currentSearchId && spinner) {
+          spinner.classList.add('hidden');
         }
+      }
+    }
 
-        card.classList.remove('hidden');
-        card.innerHTML = `
-          <div class="space-y-2">
-            <div class="flex items-center justify-between gap-2">
-              <div class="min-w-0 flex items-center gap-2 flex-wrap">
-                <span class="text-xs font-bold text-slate-800 truncate">${displayName}</span>
-                ${statusHtml}
-              </div>
-              <a 
-                href="${gplace.maps_url || '#'}" 
-                target="_blank" 
-                rel="noopener" 
-                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white hover:bg-sky-50 text-ellos-blue font-bold text-[11px] border border-sky-200 shrink-0 transition-all shadow-2xs"
-                title="Abrir rota no Google Maps"
-              >
-                <span>📍 Rota</span>
-              </a>
-            </div>
-            <div id="cnpjPhonesListContainer"></div>
+    function selectBranchPhone(bIdx, pIdx) {
+      if (!currentBranches[bIdx]) return;
+      selectedBranchIdx = bIdx;
+      selectedPhoneIdx = pIdx;
+      renderBranchesList();
+      updateStatusAndBar();
+    }
+
+    function renderBranchesList() {
+      const container = document.getElementById('resultsContainer');
+      if (!container) return;
+
+      if (!currentBranches || currentBranches.length === 0) {
+        container.classList.remove('hidden');
+        container.innerHTML = `
+          <div class="rounded-xl bg-rose-50/60 border border-rose-200/80 p-3.5 text-center text-xs font-semibold text-rose-600">
+            Nenhum resultado encontrado.
           </div>
         `;
-
-        renderDiscoveredPhonesPills(displayName);
-      } catch (err) {
-        setInputVisualState('invalid');
-      } finally {
-        if (spinner) spinner.classList.add('hidden');
+        return;
       }
+
+      container.classList.remove('hidden');
+      container.innerHTML = currentBranches.map((branch, bIdx) => {
+        const isBranchSelected = (bIdx === selectedBranchIdx);
+        const cardBorder = isBranchSelected
+          ? 'border-ellos-blue/60 bg-sky-50/25 ring-1 ring-ellos-blue/20'
+          : 'border-slate-200/90 bg-slate-50/70 hover:bg-slate-50';
+
+        const cnpjHtml = branch.cnpj
+          ? `<span class="text-[11px] font-semibold text-slate-500 tabular-nums">CNPJ: ${branch.cnpj}</span>`
+          : '';
+
+        const addressHtml = branch.address
+          ? `
+            <div class="flex items-start justify-between gap-2 text-xs text-slate-600 leading-snug">
+              <span>${branch.address}</span>
+              ${branch.maps_url ? `
+                <a href="${branch.maps_url}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="shrink-0 text-[11px] font-bold text-ellos-blue hover:underline">
+                  📍 Rota
+                </a>
+              ` : ''}
+            </div>
+          `
+          : '';
+
+        let phonesHtml = '';
+        if (branch.phones && branch.phones.length > 0) {
+          phonesHtml = branch.phones.map((p, pIdx) => {
+            const isSelected = (bIdx === selectedBranchIdx && pIdx === selectedPhoneIdx);
+            if (p.isWhatsAppValid) {
+              // VERDE com ícone do WhatsApp ao lado (estático)
+              const cls = isSelected
+                ? 'bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-300 shadow-2xs'
+                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300';
+              return `
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
+                >
+                  <span>${p.formatted}</span>
+                  ${WHATSAPP_SVG}
+                </button>
+              `;
+            } else {
+              // VERMELHO sem ícone do WhatsApp
+              const cls = isSelected
+                ? 'bg-rose-600 text-white border-rose-600 ring-2 ring-rose-300 shadow-2xs'
+                : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-300';
+              return `
+                <button
+                  type="button"
+                  onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
+                >
+                  <span>${p.formatted}</span>
+                </button>
+              `;
+            }
+          }).join('');
+        } else {
+          phonesHtml = `<span class="text-xs font-semibold text-rose-600">Sem telefone cadastrado</span>`;
+        }
+
+        return `
+          <div 
+            onclick="selectBranchPhone(${bIdx}, 0)"
+            class="rounded-xl border p-3.5 transition-all cursor-pointer space-y-2 ${cardBorder}"
+          >
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <h2 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">${branch.name}</h2>
+              ${cnpjHtml}
+            </div>
+            ${addressHtml}
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              ${phonesHtml}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateStatusAndBar() {
+      const statusText = document.getElementById('whatsappStatusText');
+      let anyValid = false;
+      let totalValid = 0;
+
+      for (const b of currentBranches) {
+        for (const p of (b.phones || [])) {
+          if (p.isWhatsAppValid) {
+            anyValid = true;
+            totalValid++;
+          }
+        }
+      }
+
+      if (statusText) {
+        if (currentBranches.length === 0) {
+          statusText.className = "mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1.5 fade-in";
+          statusText.innerHTML = `<span>WhatsApp não encontrado</span>`;
+        } else if (anyValid) {
+          statusText.className = "mt-2 text-xs font-semibold text-emerald-600 flex items-center gap-1.5 fade-in";
+          const msg = totalValid > 1
+            ? 'WhatsApp encontrado · Os números com WhatsApp ficam na cor verde'
+            : 'WhatsApp encontrado · O número com WhatsApp fica na cor verde';
+          statusText.innerHTML = `${WHATSAPP_SVG} <span>${msg}</span>`;
+        } else {
+          statusText.className = "mt-2 text-xs font-semibold text-rose-600 flex items-center gap-1.5 fade-in";
+          statusText.innerHTML = `<span>WhatsApp não encontrado</span>`;
+        }
+      }
+
+      updateWhatsAppBarState();
+    }
+
+    function updateWhatsAppBarState() {
+      const btn = document.getElementById('btnWhatsAppBar');
+      const label = document.getElementById('btnWhatsAppLabel');
+      if (!btn || !label) return;
+
+      const selectedBranch = currentBranches[selectedBranchIdx] || null;
+      const selectedPhone = selectedBranch && selectedBranch.phones ? selectedBranch.phones[selectedPhoneIdx] : null;
+
+      if (selectedBranch && selectedPhone && selectedPhone.isWhatsAppValid) {
+        // Botão VERDE ativo
+        btn.disabled = false;
+        btn.className = "w-full py-4 px-5 rounded-xl font-bold text-base sm:text-lg flex items-center justify-center gap-2.5 transition-all border-2 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.98] text-white border-[#25D366] shadow-lg shadow-emerald-500/25 cursor-pointer";
+        label.textContent = selectedBranch.name && selectedBranch.name !== selectedPhone.formatted
+          ? `WhatsApp · ${selectedBranch.name}`
+          : `WhatsApp · ${selectedPhone.formatted}`;
+      } else {
+        // Barra BRANCA inativa
+        btn.disabled = true;
+        btn.className = "w-full py-4 px-5 rounded-xl font-bold text-base flex items-center justify-center gap-2.5 transition-all border-2 bg-white text-slate-400 border-slate-200 cursor-not-allowed";
+        label.textContent = "WhatsApp";
+      }
+    }
+
+    function openSelectedWhatsApp() {
+      const selectedBranch = currentBranches[selectedBranchIdx] || null;
+      const selectedPhone = selectedBranch && selectedBranch.phones ? selectedBranch.phones[selectedPhoneIdx] : null;
+      if (!selectedBranch || !selectedPhone || !selectedPhone.isWhatsAppValid) return;
+
+      const cleanPhone = selectedPhone.phone.replace(/\D/g, '');
+      const hasCustomName = selectedBranch.name && selectedBranch.name !== selectedPhone.formatted;
+      const text = hasCustomName
+        ? `Olá ${selectedBranch.name}, tudo bem?`
+        : `Olá, tudo bem?`;
+
+      const url = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
     }
 
     // ==========================================
@@ -1078,7 +630,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=10').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=11').then((reg) => {
           reg.update();
         }).catch(() => {});
       });
@@ -1104,184 +656,6 @@
       const btn = document.getElementById('btnInstallPwa');
       if (btn) btn.classList.add('hidden');
     });
-
-    // ==========================================
-    // Agenda de Contatos (LocalStorage)
-    // ==========================================
-    const STORAGE_KEY = 'ellos_zap_contacts';
-    const LEGACY_KEY = 'elos_direct_history';
-
-    function initSaveCheckbox() {
-      const chk = document.getElementById('saveContactCheckbox');
-      if (!chk) return;
-      const savedPref = localStorage.getItem('ellos_zap_save_pref');
-      if (savedPref !== null) {
-        chk.checked = savedPref === 'true';
-      }
-      chk.addEventListener('change', (e) => {
-        localStorage.setItem('ellos_zap_save_pref', e.target.checked ? 'true' : 'false');
-      });
-    }
-
-    function getStoredContacts() {
-      try {
-        let list = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-        if (!Array.isArray(list) || list.length === 0) {
-          const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY) || '[]');
-          if (Array.isArray(legacy) && legacy.length > 0) {
-            list = legacy;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-          }
-        }
-        return Array.isArray(list) ? list : [];
-      } catch (e) {
-        return [];
-      }
-    }
-
-    function saveToHistory(item) {
-      let history = getStoredContacts();
-      const cleanTarget = item.phone.replace(/\D/g, '');
-      history = history.filter(h => (h.phone || '').replace(/\D/g, '') !== cleanTarget);
-      history.unshift(item);
-      if (history.length > 50) history.pop();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-      loadHistory();
-    }
-
-    function deleteContact(phone, e) {
-      if (e) e.stopPropagation();
-      let history = getStoredContacts();
-      const cleanTarget = phone.replace(/\D/g, '');
-      history = history.filter(h => (h.phone || '').replace(/\D/g, '') !== cleanTarget);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-      loadHistory();
-    }
-
-    function clearHistory() {
-      const history = getStoredContacts();
-      if (history.length === 0) return;
-      if (!confirm('Deseja limpar todos os contatos salvos?')) return;
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(LEGACY_KEY);
-      loadHistory();
-    }
-
-    function filterHistory() {
-      const input = document.getElementById('searchHistoryInput');
-      const term = input ? input.value.trim().toLowerCase() : '';
-      renderHistoryList(term);
-    }
-
-    function loadHistory() {
-      const input = document.getElementById('searchHistoryInput');
-      const term = input ? input.value.trim().toLowerCase() : '';
-      renderHistoryList(term);
-    }
-
-    function directLaunchContact(name, phone, e) {
-      if (e) e.stopPropagation();
-      const cleanPhone = (phone || '').replace(/\D/g, '');
-      if (cleanPhone.length < 10) return;
-      const rawMsg = document.getElementById('customMessage').value || TEMPLATES.ola;
-      const finalMsg = rawMsg.replace(/{nome}/gi, name || 'Cliente');
-      window.open(`https://wa.me/55${cleanPhone}?text=${encodeURIComponent(finalMsg)}`, '_blank');
-    }
-
-    function renderHistoryList(filterQuery = '') {
-      const historyList = document.getElementById('historyList');
-      const badge = document.getElementById('savedCountBadge');
-      const headerBadge = document.getElementById('headerSavedBadge');
-      if (!historyList) return;
-
-      const allContacts = getStoredContacts();
-      if (badge) badge.textContent = allContacts.length;
-      if (headerBadge) headerBadge.textContent = allContacts.length;
-
-      let filtered = allContacts;
-      if (filterQuery) {
-        const cleanQuery = filterQuery.replace(/\D/g, '');
-        filtered = allContacts.filter(c => {
-          const nameMatch = c.name && c.name.toLowerCase().includes(filterQuery);
-          const phoneMatch = cleanQuery && c.phone && c.phone.replace(/\D/g, '').includes(cleanQuery);
-          return nameMatch || phoneMatch;
-        });
-      }
-
-      if (filtered.length === 0) {
-        historyList.innerHTML = `
-          <div class="text-center py-5">
-            <p id="emptyHistory" class="text-xs text-slate-400 italic">
-              ${filterQuery ? 'Nenhum contato encontrado.' : 'Nenhum contato salvo ainda.'}
-            </p>
-          </div>
-        `;
-        return;
-      }
-
-      historyList.innerHTML = '';
-      filtered.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-emerald-300 transition-all';
-
-        const safeName = (item.name || 'Contato').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const safePhone = (item.phone || '').replace(/'/g, "\\'");
-        const parts = (item.name || 'EL').trim().split(' ').filter(Boolean);
-        const initials = (parts.length > 1 ? (parts[0][0] + parts[1][0]) : parts[0].substring(0, 2)).toUpperCase();
-
-        div.innerHTML = `
-          <div class="flex items-center gap-2.5 min-w-0 pr-2 cursor-pointer flex-1" onclick="fillAndLaunch('${safeName}', '${safePhone}')">
-            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs flex items-center justify-center shrink-0">
-              ${initials}
-            </div>
-            <div class="min-w-0">
-              <p class="text-xs font-bold text-slate-800 truncate">${item.name || 'Sem nome'}</p>
-              <p class="text-[11px] text-slate-500 tabular-nums truncate">${item.phone}</p>
-            </div>
-          </div>
-          <div class="flex items-center gap-1 shrink-0">
-            <button 
-              type="button" 
-              onclick="directLaunchContact('${safeName}', '${safePhone}', event)"
-              class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg font-semibold transition-all shadow-2xs flex items-center gap-1"
-              title="Abrir conversa direto no WhatsApp"
-            >
-              <span>Zap</span>
-            </button>
-            <button 
-              type="button" 
-              onclick="fillAndLaunch('${safeName}', '${safePhone}')"
-              class="text-xs bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 px-2 py-1.5 rounded-lg font-medium transition-all"
-              title="Preencher no formulário"
-            >
-              Editar
-            </button>
-            <button 
-              type="button" 
-              onclick="deleteContact('${safePhone}', event)"
-              class="text-slate-400 hover:text-rose-500 hover:bg-rose-50 p-1.5 rounded-lg transition-colors"
-              title="Excluir contato"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
-        `;
-        historyList.appendChild(div);
-      });
-    }
-
-    function fillAndLaunch(name, phone) {
-      const clean = (phone || '').replace(/\D/g, '');
-      document.getElementById('contactName').value = name;
-      document.getElementById('contactPhone').value = formatUnifiedValue(clean);
-      toggleClearBtn('contactName', 'btnClearName');
-      toggleClearBtn('contactPhone', 'btnClearPhone');
-      updatePreview();
-      validateTypedPhone(clean);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
   </script>
 </body>
 </html>
