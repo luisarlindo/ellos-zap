@@ -139,6 +139,30 @@ function getDistinctiveKeywords($name) {
     return array_values(array_unique($keywords));
 }
 
+function getCacheItem($key, $ttl = 86400) {
+    $dir = __DIR__ . '/cache';
+    if (!is_dir($dir)) return null;
+    $file = $dir . '/' . md5($key) . '.json';
+    if (file_exists($file) && (time() - filemtime($file)) < $ttl) {
+        $content = @file_get_contents($file);
+        if ($content !== false) {
+            $data = json_decode($content, true);
+            if ($data !== null) return $data;
+        }
+    }
+    return null;
+}
+
+function setCacheItem($key, $data) {
+    $dir = __DIR__ . '/cache';
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+        @file_put_contents($dir . '/.htaccess', "Deny from all\n");
+    }
+    $file = $dir . '/' . md5($key) . '.json';
+    @file_put_contents($file, json_encode($data, JSON_UNESCAPED_UNICODE));
+}
+
 function extractPlaceFromGmapsItem($item) {
     $p = $item[14] ?? null;
     if (!$p || empty($p[11])) return null;
@@ -326,6 +350,15 @@ if ($action === 'search') {
     $hasLetters = (bool)preg_match('/[a-zA-ZÀ-ÿ]/u', $rawQuery);
     $digitsOnly = preg_replace('/\D/', '', $rawQuery);
 
+    $searchCacheKey = "search_" . md5(stripAccents($rawQuery) . "_" . round($lat, 2) . "_" . round($lng, 2));
+    $cached = getCacheItem($searchCacheKey, 86400);
+    if ($cached !== null) {
+        $cached['cached'] = true;
+        $cached['elapsed_ms'] = round((microtime(true) - $t0) * 1000);
+        echo json_encode($cached);
+        exit;
+    }
+
     // =========================================================
     // MODO A: TELEFONE (10 ou 11 dígitos, sem letras)
     // =========================================================
@@ -378,14 +411,16 @@ if ($action === 'search') {
             ];
         }
 
-        echo json_encode([
+        $phoneResponse = [
             'success' => true,
             'mode' => 'phone',
             'query' => $rawQuery,
             'resolved_name' => $matchedBranches[0]['name'] ?? $formattedPhone,
             'elapsed_ms' => round((microtime(true) - $t0) * 1000),
             'branches' => $matchedBranches
-        ]);
+        ];
+        setCacheItem($searchCacheKey, $phoneResponse);
+        echo json_encode($phoneResponse);
         exit;
     }
 
@@ -518,7 +553,7 @@ if ($action === 'search') {
             unset($fb);
         }
 
-        echo json_encode([
+        $nameResponse = [
             'success' => true,
             'mode' => 'name',
             'query' => $rawQuery,
@@ -526,7 +561,11 @@ if ($action === 'search') {
             'was_corrected' => $wasCorrected,
             'elapsed_ms' => round((microtime(true) - $t0) * 1000),
             'branches' => array_slice($filteredBranches, 0, 10)
-        ]);
+        ];
+        if (!empty($filteredBranches)) {
+            setCacheItem($searchCacheKey, $nameResponse);
+        }
+        echo json_encode($nameResponse);
         exit;
     }
 
@@ -550,6 +589,16 @@ if ($action === 'cnpj') {
     if (strlen($cnpj) !== 14) {
         http_response_code(400);
         echo json_encode(['error' => true, 'message' => 'Informe um CNPJ válido com 14 dígitos.']);
+        exit;
+    }
+
+    $cnpjCacheKey = "cnpj_" . $cnpj;
+    $cached = getCacheItem($cnpjCacheKey, 7 * 86400);
+    if ($cached !== null) {
+        $cached['cached'] = true;
+        $cached['elapsed_ms'] = round((microtime(true) - $t0) * 1000);
+        http_response_code(200);
+        echo json_encode($cached);
         exit;
     }
 
@@ -891,8 +940,7 @@ if ($action === 'cnpj') {
     $receitaDisplayName = $fantasia ?: ($searchName ?: $razao);
     $formattedCnpj = formatCnpj($cnpj);
 
-    http_response_code(200);
-    echo json_encode([
+    $cnpjResponse = [
         'success' => true,
         'mode' => 'cnpj',
         'query' => $formattedCnpj,
@@ -924,7 +972,11 @@ if ($action === 'cnpj') {
             'maps_url' => $mapsInfo['maps_url'],
             'phones' => $slicedPhones
         ]]
-    ]);
+    ];
+    setCacheItem($cnpjCacheKey, $cnpjResponse);
+
+    http_response_code(200);
+    echo json_encode($cnpjResponse);
     exit;
 }
 

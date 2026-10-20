@@ -161,11 +161,20 @@
           </button>
         </div>
 
+        <!-- Histórico Recente de Buscas (Chips) -->
+        <div id="recentSearchesSection" class="hidden pt-2.5 pb-0.5 fade-in">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1.5 px-0.5">
+            <span>Buscas recentes</span>
+            <button type="button" onclick="clearRecentSearches()" class="hover:text-slate-600 transition-colors">Limpar histórico</button>
+          </div>
+          <div id="recentSearchesChips" class="flex flex-wrap gap-1.5"></div>
+        </div>
+
         <!-- Texto de Status: WhatsApp encontrado (verde) ou vermelho se inválido -->
         <div id="whatsappStatusText" class="hidden mt-2 text-xs font-semibold flex items-center gap-1.5 fade-in"></div>
       </div>
 
-      <!-- LISTA DE RESULTADOS / FILIAIS (Nome, Endereço, Telefone Verde/Vermelho) -->
+      <!-- LISTA DE RESULTADOS / FILIAIS (Nome, Status, Endereço, Telefone Verde/Vermelho + Copiar) -->
       <div id="resultsContainer" class="hidden space-y-2.5 max-h-[60vh] overflow-y-auto pr-0.5 fade-in"></div>
 
       <!-- BOTÃO DO WHATSAPP (Branco quando inativo/sem WhatsApp · Verde quando WhatsApp válido) -->
@@ -196,6 +205,7 @@
       71,73,74,75,77,79,81,82,83,84,85,86,87,88,89,91,92,93,94,95,96,97,98,99
     ]);
 
+    const RECENT_KEY = 'ellos_zap_recent_searches_v1';
     const phoneValidationCache = new Map();
     let searchDebounceTimer = null;
     let currentSearchId = 0;
@@ -203,9 +213,27 @@
     let selectedBranchIdx = 0;
     let selectedPhoneIdx = 0;
 
+    // Coordenadas padrão (João Pessoa/PB), com atualização automática via GPS do navegador
+    let userLat = -7.14;
+    let userLng = -34.86;
+
     document.addEventListener('DOMContentLoaded', () => {
       const inp = document.getElementById('unifiedInput');
       inp.addEventListener('input', () => handleInput(inp));
+
+      // Captura geolocalização do usuário silenciosamente
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            userLat = Number(pos.coords.latitude.toFixed(4));
+            userLng = Number(pos.coords.longitude.toFixed(4));
+          },
+          () => {},
+          { timeout: 5000, maximumAge: 600000 }
+        );
+      }
+
+      renderRecentSearches();
     });
 
     function handleUnifiedKeydown(event) {
@@ -247,9 +275,11 @@
 
       if (raw.trim().length > 0) {
         btnClear.classList.remove('hidden');
+        hideRecentSearches();
       } else {
         btnClear.classList.add('hidden');
         clearResultsUI();
+        renderRecentSearches();
         return;
       }
 
@@ -264,6 +294,7 @@
         } else {
           input.value = '';
           clearResultsUI();
+          renderRecentSearches();
           return;
         }
 
@@ -284,7 +315,7 @@
         if (trimmed.length >= 3) {
           searchDebounceTimer = setTimeout(() => {
             triggerUnifiedSearch(false);
-          }, 480);
+          }, 450);
         } else {
           clearResultsUI();
         }
@@ -301,6 +332,7 @@
       btnClear.classList.add('hidden');
       if (correctedBadge) correctedBadge.classList.add('hidden');
       clearResultsUI();
+      renderRecentSearches();
       inp.focus();
     }
 
@@ -321,6 +353,106 @@
       }
       if (spinner) spinner.classList.add('hidden');
       updateWhatsAppBarState();
+    }
+
+    // ==========================================
+    // Histórico de Buscas Recentes
+    // ==========================================
+    function getRecentSearches() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]');
+        return Array.isArray(stored) ? stored : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveRecentSearch(query, label) {
+      if (!query || query.trim().length < 3) return;
+      let list = getRecentSearches();
+      const cleanQ = query.trim();
+      const cleanL = (label || cleanQ).trim();
+
+      // Remove duplicados pelo query
+      list = list.filter(item => item.query.toLowerCase() !== cleanQ.toLowerCase());
+      list.unshift({ query: cleanQ, label: cleanL });
+      if (list.length > 5) list = list.slice(0, 5);
+
+      try {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+      } catch (e) {}
+    }
+
+    function renderRecentSearches() {
+      const sec = document.getElementById('recentSearchesSection');
+      const chipsCont = document.getElementById('recentSearchesChips');
+      const inp = document.getElementById('unifiedInput');
+      if (!sec || !chipsCont) return;
+
+      if (inp && inp.value.trim().length > 0) {
+        sec.classList.add('hidden');
+        return;
+      }
+
+      const list = getRecentSearches();
+      if (list.length === 0) {
+        sec.classList.add('hidden');
+        chipsCont.innerHTML = '';
+        return;
+      }
+
+      sec.classList.remove('hidden');
+      chipsCont.innerHTML = list.map((item, idx) => `
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-semibold transition-all">
+          <button type="button" onclick="applyRecentSearch('${item.query.replace(/'/g, "\\'")}')" class="truncate max-w-[140px] sm:max-w-[190px]">
+            ${item.label}
+          </button>
+          <button type="button" onclick="removeRecentSearchItem(${idx})" class="text-slate-400 hover:text-rose-500 font-bold ml-0.5" title="Remover">
+            ×
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function hideRecentSearches() {
+      const sec = document.getElementById('recentSearchesSection');
+      if (sec) sec.classList.add('hidden');
+    }
+
+    function applyRecentSearch(query) {
+      const inp = document.getElementById('unifiedInput');
+      if (!inp) return;
+      inp.value = query;
+      handleInput(inp);
+      triggerUnifiedSearch(true);
+    }
+
+    function removeRecentSearchItem(idx) {
+      let list = getRecentSearches();
+      list.splice(idx, 1);
+      try {
+        localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+      } catch (e) {}
+      renderRecentSearches();
+    }
+
+    function clearRecentSearches() {
+      try {
+        localStorage.removeItem(RECENT_KEY);
+      } catch (e) {}
+      renderRecentSearches();
+    }
+
+    // ==========================================
+    // Cópia de Telefone com 1 Clique
+    // ==========================================
+    function copyPhoneNumber(phone, btn) {
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(phone).then(() => {
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<span class="text-[10px] font-bold text-emerald-600">✓</span>`;
+        setTimeout(() => { btn.innerHTML = originalHtml; }, 1600);
+      }).catch(() => {});
     }
 
     // Valida se um número (10 ou 11 dígitos) tem WhatsApp válido
@@ -362,13 +494,16 @@
       const rawQuery = inp.value.trim();
       if (!rawQuery) return;
 
+      hideRecentSearches();
+
       const searchId = ++currentSearchId;
       const spinner = document.getElementById('searchSpinner');
       const correctedBadge = document.getElementById('correctedBadge');
       if (spinner) spinner.classList.remove('hidden');
 
       try {
-        const res = await fetch(`/api/2chat/search?q=${encodeURIComponent(rawQuery)}`);
+        const url = `/api/2chat/search?q=${encodeURIComponent(rawQuery)}&lat=${userLat}&lng=${userLng}`;
+        const res = await fetch(url);
         const data = await res.json();
         if (searchId !== currentSearchId) return;
 
@@ -421,6 +556,10 @@
 
         if (searchId !== currentSearchId) return;
         currentBranches = validatedBranches;
+
+        // Salva busca bem-sucedida no histórico recente
+        const primaryLabel = data.resolved_name || (currentBranches[0] ? currentBranches[0].name : rawQuery);
+        saveRecentSearch(rawQuery, primaryLabel);
 
         // Seleciona automaticamente a primeira filial que tenha WhatsApp válido (ou a primeira da lista)
         selectedBranchIdx = 0;
@@ -481,6 +620,22 @@
           ? `<span class="text-[11px] font-semibold text-slate-500 tabular-nums">CNPJ: ${branch.cnpj}</span>`
           : '';
 
+        // Status Aberto / Fechado com badge colorido
+        let statusBadgeHtml = '';
+        if (branch.status) {
+          const isOpen = /aberto/i.test(branch.status) && !/fechado/i.test(branch.status);
+          const badgeCls = isOpen 
+            ? 'bg-emerald-50 text-emerald-700 border-emerald-200' 
+            : 'bg-amber-50 text-amber-800 border-amber-200';
+          const dotCls = isOpen ? 'bg-emerald-500' : 'bg-amber-500';
+          statusBadgeHtml = `
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${badgeCls}">
+              <span class="w-1.5 h-1.5 rounded-full ${dotCls}"></span>
+              <span>${branch.status}</span>
+            </span>
+          `;
+        }
+
         const addressHtml = branch.address
           ? `
             <div class="flex items-start justify-between gap-2 text-xs text-slate-600 leading-snug">
@@ -499,33 +654,53 @@
           phonesHtml = branch.phones.map((p, pIdx) => {
             const isSelected = (bIdx === selectedBranchIdx && pIdx === selectedPhoneIdx);
             if (p.isWhatsAppValid) {
-              // VERDE com ícone do WhatsApp ao lado (estático)
+              // VERDE com ícone do WhatsApp ao lado (estático) + Botão de cópia rápida
               const cls = isSelected
                 ? 'bg-emerald-600 text-white border-emerald-600 ring-2 ring-emerald-300 shadow-2xs'
                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-300';
               return `
-                <button
-                  type="button"
-                  onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
-                >
-                  <span>${p.formatted}</span>
-                  ${WHATSAPP_SVG}
-                </button>
+                <div class="inline-flex items-center gap-1">
+                  <button
+                    type="button"
+                    onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
+                  >
+                    <span>${p.formatted}</span>
+                    ${WHATSAPP_SVG}
+                  </button>
+                  <button
+                    type="button"
+                    title="Copiar número"
+                    onclick="event.stopPropagation(); copyPhoneNumber('${p.formatted}', this)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 active:scale-95 transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  </button>
+                </div>
               `;
             } else {
-              // VERMELHO sem ícone do WhatsApp
+              // VERMELHO sem ícone do WhatsApp + Botão de cópia rápida
               const cls = isSelected
                 ? 'bg-rose-600 text-white border-rose-600 ring-2 ring-rose-300 shadow-2xs'
                 : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-300';
               return `
-                <button
-                  type="button"
-                  onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
-                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
-                >
-                  <span>${p.formatted}</span>
-                </button>
+                <div class="inline-flex items-center gap-1">
+                  <button
+                    type="button"
+                    onclick="event.stopPropagation(); selectBranchPhone(${bIdx}, ${pIdx})"
+                    class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-bold border transition-all tabular-nums ${cls}"
+                  >
+                    <span>${p.formatted}</span>
+                  </button>
+                  <button
+                    type="button"
+                    title="Copiar número"
+                    onclick="event.stopPropagation(); copyPhoneNumber('${p.formatted}', this)"
+                    class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 active:scale-95 transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  </button>
+                </div>
               `;
             }
           }).join('');
@@ -539,7 +714,10 @@
             class="rounded-xl border p-3.5 transition-all cursor-pointer space-y-2 ${cardBorder}"
           >
             <div class="flex items-center justify-between gap-2 flex-wrap">
-              <h2 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">${branch.name}</h2>
+              <div class="flex items-center gap-2 flex-wrap">
+                <h2 class="text-sm sm:text-base font-bold text-slate-900 leading-tight">${branch.name}</h2>
+                ${statusBadgeHtml}
+              </div>
               ${cnpjHtml}
             </div>
             ${addressHtml}
@@ -619,9 +797,15 @@
         : `Olá, tudo bem?`;
 
       const encodedText = encodeURIComponent(text);
-      // Abre diretamente o aplicativo nativo do WhatsApp na conversa (sem passar pela tela intermediária do site api.whatsapp.com)
-      const deepLink = `whatsapp://send?phone=55${cleanPhone}&text=${encodedText}`;
-      window.location.href = deepLink;
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        // No celular: protocolo nativo direto no app do WhatsApp (sem tela intermediária de site)
+        window.location.href = `whatsapp://send?phone=55${cleanPhone}&text=${encodedText}`;
+      } else {
+        // No Desktop: abre o WhatsApp Web diretamente em nova aba para conveniência
+        window.open(`https://web.whatsapp.com/send?phone=55${cleanPhone}&text=${encodedText}`, '_blank', 'noopener,noreferrer');
+      }
     }
 
     // ==========================================
@@ -631,7 +815,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=13').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=14').then((reg) => {
           reg.update();
         }).catch(() => {});
       });
