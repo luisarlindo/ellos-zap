@@ -412,10 +412,12 @@ if ($action === 'search') {
         $queryWords = array_values(array_filter(preg_split('/\s+/', $normQuery), fn($w) => strlen($w) >= 2));
 
         // 1. Verifica se existe exatamente o nome digitado pelo usuário (ex: se existir "Pizza Mestro", mantém "Pizza Mestro")
+        $exactPhraseMatches = [];
         $exactMatches = [];
         foreach ($places as $pl) {
             $normTitle = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($pl['name'])));
             if (str_contains($normTitle, $normQuery)) {
+                $exactPhraseMatches[] = $pl;
                 $exactMatches[] = $pl;
             } else {
                 $allWordsMatch = true;
@@ -429,6 +431,9 @@ if ($action === 'search') {
                     $exactMatches[] = $pl;
                 }
             }
+        }
+        if (!empty($exactPhraseMatches)) {
+            $exactMatches = $exactPhraseMatches;
         }
 
         $wasCorrected = false;
@@ -468,8 +473,12 @@ if ($action === 'search') {
                 $normResolved = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($resolvedBrand)));
                 $resolvedWords = array_values(array_filter(preg_split('/\s+/', $normResolved), fn($w) => strlen($w) >= 2));
 
+                $phraseBranches = [];
                 foreach ($places as $pl) {
                     $normTitle = trim(preg_replace('/[^a-z0-9\s]/', ' ', stripAccents($pl['name'])));
+                    if (str_contains($normTitle, $normResolved)) {
+                        $phraseBranches[] = $pl;
+                    }
                     $matchAll = true;
                     foreach ($resolvedWords as $rw) {
                         if (!preg_match('/\b' . preg_quote($rw, '/') . '/i', $normTitle)) {
@@ -480,6 +489,9 @@ if ($action === 'search') {
                     if ($matchAll) {
                         $filteredBranches[] = $pl;
                     }
+                }
+                if (!empty($phraseBranches)) {
+                    $filteredBranches = $phraseBranches;
                 }
             }
 
