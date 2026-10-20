@@ -1,0 +1,44 @@
+# Ellos Zap - Apache / LiteSpeed Configuration
+DirectoryIndex index.html index.php
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Redirecionar endpoints da API 2Chat e CNPJ/Google para api.php
+    RewriteRule ^api/2chat/([a-zA-Z0-9_-]+)/?$ api.php?action=$1 [QSA,L]
+    RewriteRule ^api/cnpj/([a-zA-Z0-9_-]+)/?$ api.php?action=cnpj&cnpj=$1 [QSA,L]
+    RewriteRule ^api/cnpj/?$ api.php?action=cnpj [QSA,L]
+
+    # Servir arquivos e diretórios existentes diretamente
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Fallback para index.html para rotas de SPA/PWA
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# Tipos MIME para PWA e Web Apps modernos
+<IfModule mod_mime.c>
+    AddType application/manifest+json .webmanifest
+    AddType application/manifest+json .json
+    AddType application/javascript .js
+    AddType image/png .png
+    AddType image/svg+xml .svg
+</IfModule>
+
+# Headers de controle para Service Worker e PWA
+<IfModule mod_headers.c>
+    <FilesMatch "(index\.html|sw\.js)$">
+        Header set Service-Worker-Allowed "/"
+        Header set Cache-Control "no-cache, no-store, must-revalidate"
+        Header set Pragma "no-cache"
+        Header set Expires "0"
+    </FilesMatch>
+
+    <FilesMatch "manifest\.json$">
+        Header set Content-Type "application/manifest+json; charset=utf-8"
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>

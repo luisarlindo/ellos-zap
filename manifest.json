@@ -1,0 +1,35 @@
+{
+  "name": "Ellos Zap",
+  "short_name": "Ellos Zap",
+  "description": "Disparador rápido e validador de WhatsApp da ellos connecTI",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0073ce",
+  "orientation": "portrait-primary",
+  "categories": ["utilities", "business", "productivity"],
+  "icons": [
+    {
+      "src": "assets/logo.png?v=3",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png?v=3",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Nova Conversa",
+      "short_name": "Conversar",
+      "description": "Iniciar uma conversa no WhatsApp rapidamente",
+      "url": "./index.html",
+      "icons": [{ "src": "assets/logo.png?v=3", "sizes": "192x192" }]
+    }
+  ]
+}
