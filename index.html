@@ -132,9 +132,8 @@
           <input 
             type="text" 
             id="unifiedInput" 
-            placeholder="Ellos / (83) 99999-9999 / 00.000.000/0001-00" 
             onkeydown="handleUnifiedKeydown(event)"
-            class="block w-full pl-4 pr-16 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-semibold text-base sm:text-lg tabular-nums"
+            class="block w-full pl-4 pr-16 py-3.5 rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-ellos-blue focus:border-ellos-blue transition-all font-semibold text-base sm:text-lg tabular-nums"
             autocomplete="off"
             autocorrect="off"
             spellcheck="false"
@@ -632,7 +631,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=12').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=13').then((reg) => {
           reg.update();
         }).catch(() => {});
       });
