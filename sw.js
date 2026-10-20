@@ -1,5 +1,5 @@
 // sw.js - Service Worker para Ellos Zap PWA
-const CACHE_NAME = 'ellos-zap-v11';
+const CACHE_NAME = 'ellos-zap-v12';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',

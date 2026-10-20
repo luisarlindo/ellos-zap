@@ -619,8 +619,10 @@
         ? `Olá ${selectedBranch.name}, tudo bem?`
         : `Olá, tudo bem?`;
 
-      const url = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
+      const encodedText = encodeURIComponent(text);
+      // Abre diretamente o aplicativo nativo do WhatsApp na conversa (sem passar pela tela intermediária do site api.whatsapp.com)
+      const deepLink = `whatsapp://send?phone=55${cleanPhone}&text=${encodedText}`;
+      window.location.href = deepLink;
     }
 
     // ==========================================
@@ -630,7 +632,7 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=11').then((reg) => {
+        navigator.serviceWorker.register('./sw.js?v=12').then((reg) => {
           reg.update();
         }).catch(() => {});
       });
